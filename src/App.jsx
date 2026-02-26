@@ -2,9 +2,9 @@ import { useState } from 'react';
 import Bienvenida from './pages/Bienvenida';
 import Menu from './pages/Menu'; 
 import Carrito from './pages/Carrito';
+import Confirmacion from './pages/Confirmacion'; // Importación correcta
 
 // NUESTRA BASE DE DATOS CENTRAL FINGIENDO SER SUPABASE
-// Fíjate que es una lista plana y cada producto tiene su 'macro_categoria' y 'categoria'
 const dbProductos = [
   // --- BEBIDAS ---
   { id: 1, nombre: "Capuccino", descripcion: "Clásico con espuma de leche.", precio: 10.00, imagen: "/capuccino.jpeg", disponible: true, categoria: "Bebidas de Café", macro_categoria: "Bebida" },
@@ -15,7 +15,7 @@ const dbProductos = [
   { id: 4, nombre: "La Kansas", descripcion: "Doble hamburguesa, salsa BBQ, cebolla caramelizada, queso cheddar y Tocino.", precio: 22.00, imagen: "/burger_kansas.jpg", disponible: true, categoria: "Smash Burgers", macro_categoria: "Comida" },
   
   // --- POSTRES (O Dulces) ---
-{ 
+  { 
     id: 5, 
     nombre: "Garfield", 
     precio: 19.00, 
@@ -24,7 +24,7 @@ const dbProductos = [
     macro_categoria: "Dulces",
     imagen: "/waffle_garfield.jpg",
     disponible: true,
-    // ¡NUEVA COLUMNA DE EXTRAS!
+    // EXTRAS
     extras_disponibles: [
       { id_extra: "ext1", nombre: "Nutella", precio: 3.00 },
       { id_extra: "ext2", nombre: "Fresas", precio: 5.00 },
@@ -66,10 +66,9 @@ const dbProductos = [
 function App() {
   const [pantallaActual, setPantallaActual] = useState('bienvenida');
   const [carrito, setCarrito] = useState([]);
-
-const agregarAlCarrito = (producto) => {
+  
+  const agregarAlCarrito = (producto) => {
     setCarrito((carritoActual) => {
-      // Ahora buscamos por idCarrito
       const productoExistente = carritoActual.find(item => item.idCarrito === producto.idCarrito);
       if (productoExistente) {
         return carritoActual.map(item => 
@@ -100,8 +99,16 @@ const agregarAlCarrito = (producto) => {
     setCarrito((carritoActual) => carritoActual.filter(item => item.idCarrito !== idCarritoBusqueda));
   };
 
+  // --- RUTAS DE NAVEGACIÓN ---
   const irAlMenu = () => setPantallaActual('menu');
   const irAlCarrito = () => setPantallaActual('carrito');
+  const irAConfirmacion = () => setPantallaActual('confirmacion'); // Añadimos la ruta a confirmación
+
+  // Función final: Vacía el carrito y te manda de regreso al menú
+  const finalizarPedidoYVolver = () => {
+    setCarrito([]);
+    setPantallaActual('menu');
+  };
 
   return (
     <div>
@@ -122,9 +129,15 @@ const agregarAlCarrito = (producto) => {
           carrito={carrito} 
           productosDB={dbProductos} 
           agregarAlCarrito={agregarAlCarrito} 
-          disminuirCantidad={disminuirCantidad} /* PASAMOS LAS NUEVAS FUNCIONES */
+          disminuirCantidad={disminuirCantidad}
           eliminarDelCarrito={eliminarDelCarrito}
+          irAConfirmacion={irAConfirmacion} /* LE PASAMOS LA FUNCIÓN AL CARRITO */
         />
+      )}
+
+      {/* --- RENDERIZAMOS LA PANTALLA DE CONFIRMACIÓN --- */}
+      {pantallaActual === 'confirmacion' && (
+        <Confirmacion volverAlMenu={finalizarPedidoYVolver} />
       )}
     </div>
   );

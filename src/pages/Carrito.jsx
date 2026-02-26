@@ -1,6 +1,6 @@
 import { MdArrowBackIosNew, MdInfo, MdRestaurantMenu, MdDeleteOutline, MdEditNote, MdCheckCircle } from "react-icons/md";
 
-function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCantidad, eliminarDelCarrito }) {
+function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCantidad, eliminarDelCarrito, irAConfirmacion }) {
   
   // 1. CALCULAMOS TOTALES
   const subtotal = carrito.reduce((suma, item) => suma + (item.precio * item.cantidad), 0);
@@ -9,29 +9,26 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
   // ======================================================================
   // 2. EL ALGORITMO DE RECOMENDACIONES (CROSS-SELLING)
   // ======================================================================
-  
-  // A. ¿Qué tenemos en el carrito actualmente? Sacamos las macro-categorías únicas
   const categoriasEnCarrito = [...new Set(carrito.map(item => item.macro_categoria))];
-  const idsEnCarrito = carrito.map(item => item.id); // Para no recomendar algo que ya compraron
+  // Para las recomendaciones, seguimos usando el id base para no recomendar algo que ya tienen
+  const idsBaseEnCarrito = carrito.map(item => item.id); 
 
-  const tieneBebida = categoriasEnCarrito.includes("Bebida");
-  const tieneComida = categoriasEnCarrito.includes("Comida");
+  const tieneBebida = categoriasEnCarrito.includes("Bebidas calientes") || categoriasEnCarrito.includes("Bebidas frías") || categoriasEnCarrito.includes("Bebidas con alcohol");
+  const tieneComida = categoriasEnCarrito.includes("Salados");
 
-  // B. Decidimos qué recomendar basándonos en la lógica
-  let macroObjetivo = "Postre"; // Por defecto, si tiene comida y bebida, le sugerimos un postre
+  let macroObjetivo = "Dulces"; // Por defecto, sugerimos postres/dulces
 
   if (tieneBebida && !tieneComida) {
-    macroObjetivo = "Comida"; // Solo pidió bebida -> Sugerir comida
+    macroObjetivo = "Salados"; 
   } else if (tieneComida && !tieneBebida) {
-    macroObjetivo = "Bebida"; // Solo pidió comida -> Sugerir bebida
+    macroObjetivo = "Bebidas frías"; // Si comió salado, seguro tiene sed
   }
 
-  // C. Filtramos la base de datos para obtener los productos recomendados
   const recomendaciones = productosDB.filter(producto => 
-    producto.macro_categoria === macroObjetivo && // Que sea de la categoría objetivo
-    producto.disponible === true &&              // Que no esté agotado
-    !idsEnCarrito.includes(producto.id)          // Que no lo haya pedido ya
-  ).slice(0, 4); // Tomamos máximo 4 recomendaciones para no saturar la pantalla
+    producto.macro_categoria === macroObjetivo && 
+    producto.disponible === true &&              
+    !idsBaseEnCarrito.includes(producto.id)          
+  ).slice(0, 4);
 
   // ======================================================================
 
@@ -74,24 +71,43 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
             <p className="text-center text-gray-500 py-10">Tu carrito está vacío. ¡Anímate a pedir algo delicioso!</p>
           ) : (
             carrito.map((item) => (
-              <div key={item.id} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 items-center border border-gray-100">
-                <div className="w-20 h-20 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden">
+              <div key={item.idCarrito} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 items-center border border-gray-100">
+                <div className="w-20 h-20 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden mt-1 self-start">
                   <img src={item.imagen} alt={item.nombre} className="w-full h-full object-cover" />
                 </div>
+                
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-1">
                     <h3 className="font-['Fredoka'] font-bold text-gray-800 truncate pr-2">{item.nombre}</h3>
-                    <p className="font-bold text-[#E65E3A]">S/ {(item.precio * item.cantidad).toFixed(2)}</p>
+                    <p className="font-bold text-[#E65E3A] whitespace-nowrap">S/ {(item.precio * item.cantidad).toFixed(2)}</p>
                   </div>
-                  <p className="text-xs text-gray-500 mb-3 truncate">{item.descripcion}</p>
                   
-                  <div className="flex items-center gap-3">
+                  {/* Descripción original del producto */}
+                  <p className="text-xs text-gray-500 mb-2 truncate">{item.descripcion}</p>
+                  
+                  {/* --- NUEVO: UI DE TOPPINGS Y NOTAS --- */}
+                  {(item.extras?.length > 0 || item.notas) && (
+                    <div className="mb-3 space-y-1">
+                      {item.extras?.map((extra, i) => (
+                        <div key={i} className="text-[10px] inline-block bg-orange-50 text-[#E65E3A] border border-orange-100 px-2 py-0.5 rounded-md font-semibold mr-1 mb-1">
+                          + {extra.nombre} (S/ {extra.precio.toFixed(2)})
+                        </div>
+                      ))}
+                      {item.notas && (
+                        <div className="text-[10px] text-gray-500 italic bg-gray-50 px-2 py-1 rounded-md border border-gray-100 mt-1">
+                          <span className="font-semibold not-italic">Nota:</span> {item.notas}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-3 mt-1">
                     {/* CONTROLES DE CANTIDAD */}
                     <div className="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-100">
                       
                       {/* Botón de Menos (-) */}
                       <button 
-                        onClick={() => disminuirCantidad(item.id)}
+                        onClick={() => disminuirCantidad(item.idCarrito)}
                         className="w-7 h-7 flex items-center justify-center rounded-md bg-white shadow-sm text-gray-600 hover:text-[#E65E3A] active:scale-95 transition-all text-lg font-bold">
                         -
                       </button>
@@ -100,7 +116,7 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
                         {item.cantidad}
                       </span>
                       
-                      {/* Botón de Más (+) */}
+                      {/* Botón de Más (+) - CORREGIDO: Ahora le pasamos todo el 'item' */}
                       <button 
                         onClick={() => agregarAlCarrito(item)}
                         className="w-7 h-7 flex items-center justify-center rounded-md bg-[#E65E3A] text-white shadow-sm shadow-orange-500/30 active:scale-95 transition-all text-lg font-bold">
@@ -111,7 +127,7 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
                     
                     {/* BOTÓN REMOVER TODO */}
                     <button 
-                      onClick={() => eliminarDelCarrito(item.id)}
+                      onClick={() => eliminarDelCarrito(item.idCarrito)}
                       className="text-xs text-red-400 hover:text-red-500 font-semibold ml-auto flex items-center gap-1">
                       <MdDeleteOutline className="text-sm" /> Remover
                     </button>
@@ -123,11 +139,10 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
         </div>
 
         {/* --- SECCIÓN DE RECOMENDACIONES DINÁMICAS --- */}
-        {/* Solo la mostramos si hay recomendaciones disponibles */}
         {recomendaciones.length > 0 && (
           <div className="mt-8 mb-6">
             <h3 className="font-['Fredoka'] text-md font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <span className="text-yellow-500 text-xl"></span>
+              <span className="text-yellow-500 text-xl">⭐</span>
               ¿Qué tal si lo acompañas con?
             </h3>
             
@@ -136,7 +151,6 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
                 <div key={prod.id} className="min-w-[140px] max-w-[140px] bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex flex-col items-center text-center transition-transform active:scale-95">
                   <img src={prod.imagen} alt={prod.nombre} className="w-16 h-16 rounded-full object-cover mb-2 shadow-sm" />
                   
-                  {/* SOLUCIÓN DE TEXTO: h-10 fija la altura y line-clamp-2 recorta el texto largo inteligentemente */}
                   <div className="h-10 w-full flex items-center justify-center">
                     <h4 className="font-bold text-sm text-gray-700 line-clamp-2 leading-tight">
                       {prod.nombre}
@@ -146,7 +160,15 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
                   <span className="text-xs text-[#E65E3A] font-bold mt-1">S/ {prod.precio.toFixed(2)}</span>
                   
                   <button 
-                    onClick={() => agregarAlCarrito(prod)}
+                    onClick={() => {
+                      // Si la recomendación tiene extras, la mandamos al Menú para que abra el modal
+                      if(prod.extras_disponibles && prod.extras_disponibles.length > 0){
+                        irAlMenu();
+                        // Nota: Una mejora futura sería poder abrir el ModalProducto directamente aquí
+                      } else {
+                        agregarAlCarrito({...prod, idCarrito: prod.id.toString(), cantidad: 1});
+                      }
+                    }}
                     className="mt-2 w-full py-1.5 bg-gray-50 text-xs font-bold rounded-lg hover:bg-[#E65E3A] hover:text-white transition-colors">
                     Agregar
                   </button>
@@ -156,16 +178,16 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
           </div>
         )}
 
-        {/* OBSERVACIONES */}
+        {/* OBSERVACIONES GENERALES */}
         <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
           <h3 className="font-['Fredoka'] text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
             <MdEditNote className="text-gray-400 text-xl" />
-            Observaciones y Alergias
+            Observaciones a la mesa
           </h3>
-          <p className="text-xs text-gray-500 mb-2">Queremos que disfrutes sin preocupaciones. Cuéntanos si eres alérgico a algún ingrediente o si deseas retirar algo (ej. sin cebolla).</p>
+          <p className="text-xs text-gray-500 mb-2">¿Necesitas vasos extra, cubiertos o tienes alguna indicación general para los meseros?</p>
           <textarea 
             className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700 focus:outline-none focus:border-[#E65E3A]" 
-            placeholder="Escribe tus indicaciones aquí..." 
+            placeholder="Escribe tus indicaciones generales aquí..." 
             rows="3"
           ></textarea>
         </div>
@@ -186,6 +208,7 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
           </div>
           
           <button 
+            onClick={irAConfirmacion} // <-- AGREGAMOS EL ONCLICK AQUÍ
             disabled={carrito.length === 0}
             className={`w-full font-bold text-lg py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all ${carrito.length === 0 ? 'bg-gray-300 text-gray-500' : 'bg-[#E65E3A] hover:bg-orange-600 text-white shadow-orange-500/30 active:scale-[0.98]'}`}
           >
