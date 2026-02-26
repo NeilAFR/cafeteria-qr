@@ -45,8 +45,9 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos }) {
           <div className="flex space-x-3 pb-2 min-w-max">
             
             {/* Botón Bebidas */}
+            {/* Botón Bebidas */}
             <button 
-              onClick={() => scrollToCategory("Bebidas de Café", "Bebidas")} 
+              onClick={() => scrollToCategory("Bebidas-de-Café", "Bebidas")} 
               className={`flex items-center space-x-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-transform active:scale-95 ${categoriaActiva === 'Bebidas' ? 'bg-[#E95D34] text-white shadow-[0_4px_20px_-2px_rgba(233,93,52,0.3)]' : 'bg-white border border-gray-200 text-gray-600 hover:bg-orange-50'}`}
             >
               <MdLocalCafe className="text-lg" />
@@ -55,7 +56,7 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos }) {
 
             {/* Botón Comidas */}
             <button 
-              onClick={() => scrollToCategory("Smash Burgers", "Comidas")} 
+              onClick={() => scrollToCategory("Smash-Burgers", "Comidas")} 
               className={`flex items-center space-x-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-transform active:scale-95 ${categoriaActiva === 'Comidas' ? 'bg-[#E95D34] text-white shadow-[0_4px_20px_-2px_rgba(233,93,52,0.3)]' : 'bg-white border border-gray-200 text-gray-600 hover:bg-orange-50'}`}
             >
               <MdLunchDining className="text-lg" />
@@ -64,13 +65,12 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos }) {
 
             {/* Botón Postres */}
             <button 
-              onClick={() => scrollToCategory("Mini Waffles", "Postres")} 
+              onClick={() => scrollToCategory("Mini-Waffles", "Postres")} 
               className={`flex items-center space-x-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-transform active:scale-95 ${categoriaActiva === 'Postres' ? 'bg-[#E95D34] text-white shadow-[0_4px_20px_-2px_rgba(233,93,52,0.3)]' : 'bg-white border border-gray-200 text-gray-600 hover:bg-orange-50'}`}
             >
               <MdCookie className="text-lg" />
               <span className="font-['Fredoka'] font-medium">Postres</span>
             </button>
-
           </div>
         </nav>
       </header>
@@ -96,13 +96,18 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos }) {
 
         {/* --- LISTA DE PRODUCTOS --- */}
         {/* Ahora recorremos 'menuAgrupado' que creamos dinámicamente arriba */}
-        {menuAgrupado.map((seccion, index) => (
-          <section key={index}>
-            <div className="flex justify-between items-end mb-4">
-              <h2 id={seccion.categoria} className="font-['Fredoka'] text-xl font-bold text-gray-800 scroll-mt-32">
-                {seccion.categoria}
-              </h2>
-            </div>
+        {menuAgrupado.map((seccion, index) => {
+          // TRUCO: Reemplazamos los espacios por guiones para tener un ID válido en HTML
+          const idSeccionValido = seccion.categoria.replace(/\s+/g, '-');
+
+          return (
+            <section key={index}>
+              <div className="flex justify-between items-end mb-4">
+                {/* Le asignamos el ID corregido */}
+                <h2 id={idSeccionValido} className="font-['Fredoka'] text-xl font-bold text-gray-800 scroll-mt-32">
+                  {seccion.categoria}
+                </h2>
+              </div>
             
             <div className="grid grid-cols-1 gap-4">
               {seccion.items.map((producto) => (
@@ -145,7 +150,7 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos }) {
               ))}
             </div>
           </section>
-        ))}
+         )})}
       </main>
 
       {/* --- BOTÓN FLOTANTE DINÁMICO --- */}
