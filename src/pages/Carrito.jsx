@@ -127,7 +127,7 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
         {recomendaciones.length > 0 && (
           <div className="mt-8 mb-6">
             <h3 className="font-['Fredoka'] text-md font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <span className="text-yellow-500 text-xl">⭐</span>
+              <span className="text-yellow-500 text-xl"></span>
               ¿Qué tal si lo acompañas con?
             </h3>
             
