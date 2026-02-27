@@ -1,6 +1,6 @@
 import { MdArrowBackIosNew, MdInfo, MdRestaurantMenu, MdDeleteOutline, MdEditNote, MdCheckCircle } from "react-icons/md";
 
-function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCantidad, eliminarDelCarrito, irAConfirmacion }) {
+function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCantidad, aumentarCantidad, eliminarDelCarrito, irAConfirmacion }) {
   
   // 1. CALCULAMOS TOTALES
   const subtotal = carrito.reduce((suma, item) => suma + (item.precio * item.cantidad), 0);
@@ -73,7 +73,7 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
             carrito.map((item) => (
               <div key={item.idCarrito} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 items-center border border-gray-100">
                 <div className="w-20 h-20 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden mt-1 self-start">
-                  <img src={item.imagen} alt={item.nombre} className="w-full h-full object-cover" />
+                  <img src={item.imagen_url} alt={item.nombre} className="w-full h-full object-cover" />
                 </div>
                 
                 <div className="flex-1 min-w-0">
@@ -118,7 +118,7 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
                       
                       {/* Botón de Más (+) - CORREGIDO: Ahora le pasamos todo el 'item' */}
                       <button 
-                        onClick={() => agregarAlCarrito(item)}
+                        onClick={() => aumentarCantidad(item.idCarrito)}
                         className="w-7 h-7 flex items-center justify-center rounded-md bg-[#E65E3A] text-white shadow-sm shadow-orange-500/30 active:scale-95 transition-all text-lg font-bold">
                         +
                       </button>
@@ -142,14 +142,14 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
         {recomendaciones.length > 0 && (
           <div className="mt-8 mb-6">
             <h3 className="font-['Fredoka'] text-md font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <span className="text-yellow-500 text-xl">⭐</span>
+              <span className="text-yellow-500 text-xl"></span>
               ¿Qué tal si lo acompañas con?
             </h3>
             
             <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4" style={{ scrollbarWidth: 'none' }}>
               {recomendaciones.map((prod) => (
                 <div key={prod.id} className="min-w-[140px] max-w-[140px] bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex flex-col items-center text-center transition-transform active:scale-95">
-                  <img src={prod.imagen} alt={prod.nombre} className="w-16 h-16 rounded-full object-cover mb-2 shadow-sm" />
+                  <img src={prod.imagen_url} alt={prod.nombre} className="w-16 h-16 rounded-full object-cover mb-2 shadow-sm" />
                   
                   <div className="h-10 w-full flex items-center justify-center">
                     <h4 className="font-bold text-sm text-gray-700 line-clamp-2 leading-tight">

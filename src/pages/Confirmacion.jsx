@@ -39,27 +39,19 @@ function Confirmacion({ volverAlMenu }) {
           {/* Tarjeta de Estado del Pedido */}
           <div className="rounded-xl bg-white p-5 shadow-sm border border-gray-100 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center size-10 rounded-full bg-[#E65E3A]/10 text-[#E65E3A]">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center size-18 rounded-full bg-[#E65E3A]/10 text-[#E65E3A]">
                   <MdRestaurant className="text-xl" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-900">Estado actual</p>
-                  <p className="text-xs text-gray-500">Preparando en cocina</p>
+                  <p className="text-sm font-bold text-gray-900">Recuerda</p>
+                  <p className="text-xs text-gray-500">Puedes agregar productos cuando quieras, solo vuelve a escanear el código QR de tu respectiva mesa.</p>
                 </div>
               </div>
-              <span className="text-xs font-bold text-[#E65E3A] bg-[#E65E3A]/10 px-2.5 py-1 rounded-full">Paso 1/3</span>
             </div>
             
             {/* Barra de progreso */}
-            <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div className="absolute top-0 left-0 h-full bg-[#E65E3A] w-1/3 rounded-full"></div>
-            </div>
-            <div className="flex justify-between mt-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-              <span className="text-[#E65E3A]">Recibido</span>
-              <span>Preparando</span>
-              <span>Listo</span>
-            </div>
+            
           </div>
 
           {/* Tarjeta de Dato Curioso */}

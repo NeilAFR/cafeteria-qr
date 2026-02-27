@@ -69,7 +69,7 @@ function ModalProducto({ producto, cerrarModal, confirmarAgregado }) {
           <div className="p-4">
             <div 
               className="w-full bg-gray-200 bg-center bg-no-repeat bg-cover aspect-video rounded-xl shadow-sm" 
-              style={{ backgroundImage: `url(${producto.imagen})` }}
+              style={{ backgroundImage: `url(${producto.imagen_url})` }}
             ></div>
           </div>
 
