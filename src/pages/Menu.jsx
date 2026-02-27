@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { IoMdSnow } from "react-icons/io";
 import { MdLocalCafe, MdLunchDining, MdCookie, MdLocalBar, MdIcecream, MdAdd, MdBrightnessMedium, MdRestaurantMenu } from "react-icons/md";
-import ModalProducto from './ModalProductos'; 
+import ModalProducto from './ModalProductos';
 
 const iconosPorMacroCategoria = {
   "Salados": <MdLunchDining className="text-lg" />,
@@ -16,8 +16,7 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
   const [categoriaActiva, setCategoriaActiva] = useState(macroCategoriasUnicas[0] || 'Salados');
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
 
-  // --- LÓGICA DEL CARRUSEL (NUEVO) ---
-  // 1. Definimos las imágenes y textos de las promociones
+  // --- LÓGICA DEL CARRUSEL ---
   const promociones = [
     {
       imagen: "/cheesecake_fresa.jpg",
@@ -39,26 +38,46 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
     }
   ];
 
-  // 2. Estado para saber qué promoción estamos mostrando (empieza en la 0)
   const [promoActual, setPromoActual] = useState(0);
 
-  // 3. Efecto para cambiar la imagen cada 5 segundos
-  useEffect(() => {
-    const intervalo = setInterval(() => {
-      setPromoActual((prevPromo) => {
-        // Si llegamos a la última promo, volvemos a la primera (0), si no, pasamos a la siguiente (+1)
-        if (prevPromo === promociones.length - 1) {
-          return 0;
-        } else {
-          return prevPromo + 1;
-        }
-      });
-    }, 5000); // 5000 milisegundos = 5 segundos
+  // Funciones para avanzar y retroceder
+  const siguientePromo = () => setPromoActual(prev => (prev === promociones.length - 1 ? 0 : prev + 1));
+  const anteriorPromo = () => setPromoActual(prev => (prev === 0 ? promociones.length - 1 : prev - 1));
 
-    // Limpiamos el intervalo cuando el componente se desmonta (buena práctica en React)
+  // El reloj automático (Se reinicia si el usuario cambia la foto manualmente)
+  useEffect(() => {
+    const intervalo = setInterval(siguientePromo, 5000);
     return () => clearInterval(intervalo);
-  }, [promociones.length]);
-  // ------------------------------------
+  }, [promoActual]);
+
+  // --- NUEVA LÓGICA DE DESLIZAMIENTO (SWIPE) ---
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [touchEndX, setTouchEndX] = useState(null);
+
+  const manejarTouchStart = (e) => {
+    setTouchEndX(null); // Reiniciamos el final
+    setTouchStartX(e.targetTouches[0].clientX); // Guardamos dónde puso el dedo
+  };
+
+  const manejarTouchMove = (e) => {
+    setTouchEndX(e.targetTouches[0].clientX); // Actualizamos mientras mueve el dedo
+  };
+
+  const manejarTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+
+    const distancia = touchStartX - touchEndX;
+    const umbral = 50; // Mínimo de 50px de movimiento para considerarlo un "swipe"
+
+    if (distancia > umbral) {
+      // Deslizó hacia la izquierda
+      siguientePromo();
+    } else if (distancia < -umbral) {
+      // Deslizó hacia la derecha
+      anteriorPromo();
+    }
+  };
+  // ---------------------------------------------
 
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
   const totalPrecio = carrito.reduce((suma, item) => suma + (item.precio * item.cantidad), 0);
@@ -66,7 +85,7 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
   const menuAgrupado = macroCategoriasUnicas.map(macro => {
     const productosDeEstaMacro = productos.filter(p => p.macro_categoria === macro);
     const subCategorias = [...new Set(productosDeEstaMacro.map(p => p.categoria))];
-    
+
     return {
       macroCategoria: macro,
       subSecciones: subCategorias.map(subCat => ({
@@ -89,7 +108,7 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
     if (categoriaConExtras && categoriaConExtras.extras && categoriaConExtras.extras.length > 0) {
       setProductoSeleccionado({
         ...producto,
-        extras_disponibles: categoriaConExtras.extras 
+        extras_disponibles: categoriaConExtras.extras
       });
     } else {
       agregarAlCarrito({ ...producto, idCarrito: producto.id.toString(), cantidad: 1 });
@@ -98,7 +117,7 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
 
   return (
     <div className="bg-[#FFFBF2] font-['Nunito'] text-[#4A3B32] min-h-screen pb-24 selection:bg-[#E95D34] selection:text-white">
-      
+
       <header className="sticky top-0 z-40 bg-[#FFFBF2]/90 backdrop-blur-md border-b border-[#E95D34]/10 pb-2">
         <div className="px-5 pt-6 pb-2 flex justify-between items-center">
           <div className="flex flex-col">
@@ -115,11 +134,11 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
             {macroCategoriasUnicas.map((macro) => {
               const idValido = macro.replace(/\s+/g, '-');
               const estaActivo = categoriaActiva === macro;
-              
+
               return (
-                <button 
+                <button
                   key={macro}
-                  onClick={() => scrollToCategory(idValido, macro)} 
+                  onClick={() => scrollToCategory(idValido, macro)}
                   className={`flex items-center space-x-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-transform active:scale-95 ${estaActivo ? 'bg-[#E95D34] text-white shadow-[0_4px_20px_-2px_rgba(233,93,52,0.3)]' : 'bg-white border border-gray-200 text-gray-600 hover:bg-orange-50'}`}
                 >
                   {iconosPorMacroCategoria[macro] || <MdRestaurantMenu className="text-lg" />}
@@ -132,19 +151,22 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
       </header>
 
       <main className="px-5 py-6 space-y-8">
-        
-        {/* --- BANNER PROMOCIONAL (MODIFICADO PARA EL CARRUSEL) --- */}
-        <div className="relative w-full h-40 rounded-2xl overflow-hidden shadow-lg group bg-gray-800">
-          
-          {/* Mapeamos las promociones pero usamos CSS para controlar cuál se ve (opacidad) */}
+
+        {/* --- BANNER CON EVENTOS TÁCTILES --- */}
+        <div
+          className="relative w-full h-40 rounded-2xl overflow-hidden shadow-lg group bg-gray-800 touch-pan-y"
+          onTouchStart={manejarTouchStart}
+          onTouchMove={manejarTouchMove}
+          onTouchEnd={manejarTouchEnd}
+        >
           {promociones.map((promo, index) => (
-            <div 
+            <div
               key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${index === promoActual ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+              className={`absolute inset-0 transition-opacity duration-700 ${index === promoActual ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
             >
-              <img 
-                src={promo.imagen} 
-                alt={`Promoción ${index + 1}`} 
+              <img
+                src={promo.imagen}
+                alt={`Promoción ${index + 1}`}
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent flex flex-col justify-center px-6">
@@ -161,7 +183,6 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
             </div>
           ))}
 
-          {/* Indicadores de posición (los puntitos abajo) */}
           <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
             {promociones.map((_, index) => (
               <button
@@ -172,21 +193,20 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
               />
             ))}
           </div>
-
         </div>
 
         {menuAgrupado.map((macroSeccion, indexMacro) => {
           const idMacroValido = macroSeccion.macroCategoria.replace(/\s+/g, '-');
-          
+
           return (
             <section key={indexMacro} id={idMacroValido} className="scroll-mt-32">
               <h2 className="font-['Fredoka'] text-3xl font-extrabold text-[#E95D34] mb-6 uppercase tracking-wider border-b-2 border-[#E95D34]/20 pb-2">
                 {macroSeccion.macroCategoria}
               </h2>
-              
+
               {macroSeccion.subSecciones.map((subSeccion, indexSub) => {
-                
-                const categoriasCompactas = ['Bebidas de Café', 'Bebidas de Café Frías', 'Cervezas', 'Jugos Clásicos'];
+
+                const categoriasCompactas = ['Bebidas de Café', 'Bebidas de Café Frías', 'Cervezas'];
                 const esCompacta = categoriasCompactas.includes(subSeccion.categoria);
 
                 return (
@@ -194,11 +214,11 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
                     <h3 className="font-['Fredoka'] text-xl font-bold text-gray-800 mb-4 opacity-90">
                       {subSeccion.categoria}
                     </h3>
-                    
+
                     <div className={`grid gap-4 ${esCompacta ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                      
+
                       {subSeccion.items.map((producto) => {
-                        
+
                         if (esCompacta) {
                           return (
                             <article key={producto.id} className={`bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center transition-transform active:scale-[0.99] relative overflow-hidden ${!producto.disponible ? 'opacity-70 grayscale' : ''}`}>
@@ -211,12 +231,12 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
                               <h3 className="font-['Fredoka'] font-bold text-[15px] text-gray-800 leading-tight mb-2 line-clamp-2 min-h-[38px] flex items-center justify-center">
                                 {producto.nombre}
                               </h3>
-                              
+
                               <div className="w-full flex justify-between items-center mt-auto pt-2 border-t border-gray-50">
                                 <span className={`font-bold text-sm ${producto.disponible ? 'text-[#E95D34]' : 'text-gray-500'}`}>
                                   S/ {producto.precio.toFixed(2)}
                                 </span>
-                                <button 
+                                <button
                                   onClick={() => manejarClickAgregar(producto)}
                                   disabled={!producto.disponible}
                                   className={`w-7 h-7 rounded-full flex items-center justify-center shadow-md transition-colors ${producto.disponible ? 'bg-[#E95D34] text-white hover:bg-[#C8411B]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
@@ -239,19 +259,19 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
                                 <span className="absolute top-1 left-1 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-1.5 py-0.5 rounded-md">Popular</span>
                               )}
                             </div>
-                            
+
                             <div className="flex-1 flex flex-col justify-between py-1">
                               <div>
                                 <h3 className="font-['Fredoka'] font-bold text-lg text-gray-800 leading-tight pr-12">{producto.nombre}</h3>
                                 <p className="text-gray-500 text-xs mt-1 line-clamp-2">{producto.descripcion}</p>
                               </div>
-                              
+
                               <div className="flex justify-between items-center mt-2">
                                 <span className={`font-bold text-lg ${producto.disponible ? 'text-[#E95D34]' : 'text-gray-500'}`}>
                                   S/ {producto.precio.toFixed(2)}
                                 </span>
-                                
-                                <button 
+
+                                <button
                                   onClick={() => manejarClickAgregar(producto)}
                                   disabled={!producto.disponible}
                                   className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors ${producto.disponible ? 'bg-[#E95D34] text-white hover:bg-[#C8411B]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
@@ -283,12 +303,12 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
       </div>
 
       {productoSeleccionado && (
-        <ModalProducto 
+        <ModalProducto
           producto={productoSeleccionado}
           cerrarModal={() => setProductoSeleccionado(null)}
           confirmarAgregado={(productoPersonalizado) => {
-            agregarAlCarrito(productoPersonalizado); 
-            setProductoSeleccionado(null); 
+            agregarAlCarrito(productoPersonalizado);
+            setProductoSeleccionado(null);
           }}
         />
       )}
