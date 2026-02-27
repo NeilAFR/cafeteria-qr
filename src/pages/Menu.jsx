@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { IoMdSnow } from "react-icons/io";
 import { MdLocalCafe, MdLunchDining, MdCookie, MdLocalBar, MdIcecream, MdAdd, MdBrightnessMedium, MdRestaurantMenu } from "react-icons/md";
 import ModalProducto from './ModalProductos'; 
 
@@ -6,7 +7,7 @@ const iconosPorMacroCategoria = {
   "Salados": <MdLunchDining className="text-lg" />,
   "Dulces": <MdCookie className="text-lg" />,
   "Bebidas calientes": <MdLocalCafe className="text-lg" />,
-  "Bebidas frías": <MdIcecream className="text-lg" />,
+  "Bebidas frías": <IoMdSnow className="text-lg" />,
   "Bebidas con alcohol": <MdLocalBar className="text-lg" />
 };
 
@@ -14,6 +15,50 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
   const macroCategoriasUnicas = [...new Set(productos.map(p => p.macro_categoria))];
   const [categoriaActiva, setCategoriaActiva] = useState(macroCategoriasUnicas[0] || 'Salados');
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+
+  // --- LÓGICA DEL CARRUSEL (NUEVO) ---
+  // 1. Definimos las imágenes y textos de las promociones
+  const promociones = [
+    {
+      imagen: "/cheesecake_fresa.jpg",
+      etiqueta: "Especial del día",
+      titulo: "Cheesecake\nde Fresa",
+      textoBoton: "Ver Promo"
+    },
+    {
+      imagen: "/escape_room4.jpg", // Asegúrate de tener esta imagen en tu carpeta public
+      etiqueta: "Diversión",
+      titulo: "ESCAPE ROOM",
+      textoBoton: "Reserva ya!"
+    },
+    {
+      imagen: "/waffles_banner.jpg", // Asegúrate de tener esta imagen en tu carpeta public
+      etiqueta: "Promo Miércoles",
+      titulo: "3x2 en\nWaffles",
+      textoBoton: "Disfrútalo!"
+    }
+  ];
+
+  // 2. Estado para saber qué promoción estamos mostrando (empieza en la 0)
+  const [promoActual, setPromoActual] = useState(0);
+
+  // 3. Efecto para cambiar la imagen cada 5 segundos
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      setPromoActual((prevPromo) => {
+        // Si llegamos a la última promo, volvemos a la primera (0), si no, pasamos a la siguiente (+1)
+        if (prevPromo === promociones.length - 1) {
+          return 0;
+        } else {
+          return prevPromo + 1;
+        }
+      });
+    }, 5000); // 5000 milisegundos = 5 segundos
+
+    // Limpiamos el intervalo cuando el componente se desmonta (buena práctica en React)
+    return () => clearInterval(intervalo);
+  }, [promociones.length]);
+  // ------------------------------------
 
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
   const totalPrecio = carrito.reduce((suma, item) => suma + (item.precio * item.cantidad), 0);
@@ -88,13 +133,46 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
 
       <main className="px-5 py-6 space-y-8">
         
+        {/* --- BANNER PROMOCIONAL (MODIFICADO PARA EL CARRUSEL) --- */}
         <div className="relative w-full h-40 rounded-2xl overflow-hidden shadow-lg group bg-gray-800">
-          <img src="/cheesecake_fresa.jpg" alt="Fondo de Cheesecake" className="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-700 group-hover:scale-105"/>
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent flex flex-col justify-center px-6 z-10">
-            <span className="text-white/90 text-xs font-bold uppercase tracking-wider mb-1">Especial del día</span>
-            <h2 className="text-white font-['Fredoka'] text-2xl font-bold leading-tight">Cheesecake<br/>de Fresa</h2>
-            <button className="mt-3 bg-[#E95D34] text-white text-xs font-bold px-4 py-2 rounded-lg w-max shadow-md hover:bg-[#C8411B] transition-colors">Ver Promo</button>
+          
+          {/* Mapeamos las promociones pero usamos CSS para controlar cuál se ve (opacidad) */}
+          {promociones.map((promo, index) => (
+            <div 
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-1000 ${index === promoActual ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+            >
+              <img 
+                src={promo.imagen} 
+                alt={`Promoción ${index + 1}`} 
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent flex flex-col justify-center px-6">
+                <span className="text-white/90 text-xs font-bold uppercase tracking-wider mb-1">
+                  {promo.etiqueta}
+                </span>
+                <h2 className="text-white font-['Fredoka'] text-2xl font-bold leading-tight whitespace-pre-line">
+                  {promo.titulo}
+                </h2>
+                <button className="mt-3 bg-[#E95D34] text-white text-xs font-bold px-4 py-2 rounded-lg w-max shadow-md hover:bg-[#C8411B] transition-colors">
+                  {promo.textoBoton}
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {/* Indicadores de posición (los puntitos abajo) */}
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+            {promociones.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setPromoActual(index)}
+                className={`w-2 h-2 rounded-full transition-colors ${index === promoActual ? 'bg-white' : 'bg-white/50'}`}
+                aria-label={`Ir a promoción ${index + 1}`}
+              />
+            ))}
           </div>
+
         </div>
 
         {menuAgrupado.map((macroSeccion, indexMacro) => {
@@ -106,87 +184,89 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
                 {macroSeccion.macroCategoria}
               </h2>
               
-              {macroSeccion.subSecciones.map((subSeccion, indexSub) => (
-                <div key={indexSub} className="mb-8">
-                  <h3 className="font-['Fredoka'] text-xl font-bold text-gray-800 mb-4 opacity-90">
-                    {subSeccion.categoria}
-                  </h3>
-                  
-                  {/* MAGIA AQUÍ: Verificamos si es Bebidas de Café para cambiar la grilla a 2 columnas */}
-                  <div className={`grid gap-4 ${subSeccion.categoria === 'Bebidas de Café' ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              {macroSeccion.subSecciones.map((subSeccion, indexSub) => {
+                
+                const categoriasCompactas = ['Bebidas de Café', 'Bebidas de Café Frías', 'Cervezas', 'Jugos Clásicos'];
+                const esCompacta = categoriasCompactas.includes(subSeccion.categoria);
+
+                return (
+                  <div key={indexSub} className="mb-8">
+                    <h3 className="font-['Fredoka'] text-xl font-bold text-gray-800 mb-4 opacity-90">
+                      {subSeccion.categoria}
+                    </h3>
                     
-                    {subSeccion.items.map((producto) => {
+                    <div className={`grid gap-4 ${esCompacta ? 'grid-cols-2' : 'grid-cols-1'}`}>
                       
-                      // --- TARJETA COMPACTA (Para Bebidas de Café) ---
-                      if (subSeccion.categoria === 'Bebidas de Café') {
+                      {subSeccion.items.map((producto) => {
+                        
+                        if (esCompacta) {
+                          return (
+                            <article key={producto.id} className={`bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center transition-transform active:scale-[0.99] relative overflow-hidden ${!producto.disponible ? 'opacity-70 grayscale' : ''}`}>
+                              {!producto.disponible && (
+                                <div className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded z-10 shadow-sm uppercase tracking-wider">Agotado</div>
+                              )}
+                              <div className="w-24 h-24 mb-3 rounded-xl overflow-hidden relative bg-gray-100 shadow-sm">
+                                <img alt={producto.nombre} className="w-full h-full object-cover" src={producto.imagen_url} />
+                              </div>
+                              <h3 className="font-['Fredoka'] font-bold text-[15px] text-gray-800 leading-tight mb-2 line-clamp-2 min-h-[38px] flex items-center justify-center">
+                                {producto.nombre}
+                              </h3>
+                              
+                              <div className="w-full flex justify-between items-center mt-auto pt-2 border-t border-gray-50">
+                                <span className={`font-bold text-sm ${producto.disponible ? 'text-[#E95D34]' : 'text-gray-500'}`}>
+                                  S/ {producto.precio.toFixed(2)}
+                                </span>
+                                <button 
+                                  onClick={() => manejarClickAgregar(producto)}
+                                  disabled={!producto.disponible}
+                                  className={`w-7 h-7 rounded-full flex items-center justify-center shadow-md transition-colors ${producto.disponible ? 'bg-[#E95D34] text-white hover:bg-[#C8411B]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                                >
+                                  <MdAdd className="text-base" />
+                                </button>
+                              </div>
+                            </article>
+                          );
+                        }
+
                         return (
-                          <article key={producto.id} className={`bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center transition-transform active:scale-[0.99] relative overflow-hidden ${!producto.disponible ? 'opacity-70 grayscale' : ''}`}>
+                          <article key={producto.id} className={`bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-4 transition-transform active:scale-[0.99] relative overflow-hidden ${!producto.disponible ? 'opacity-70 grayscale' : ''}`}>
                             {!producto.disponible && (
-                              <div className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded z-10 shadow-sm uppercase tracking-wider">Agotado</div>
+                              <div className="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded z-10 shadow-sm uppercase tracking-wider">Agotado</div>
                             )}
-                            <div className="w-24 h-24 mb-3 rounded-xl overflow-hidden relative bg-gray-100 shadow-sm">
+                            <div className="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden relative bg-gray-100">
                               <img alt={producto.nombre} className="w-full h-full object-cover" src={producto.imagen_url} />
+                              {producto.popular && producto.disponible && (
+                                <span className="absolute top-1 left-1 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-1.5 py-0.5 rounded-md">Popular</span>
+                              )}
                             </div>
-                            {/* Ajustamos la altura mínima para que los nombres largos no rompan la cuadrícula */}
-                            <h3 className="font-['Fredoka'] font-bold text-[15px] text-gray-800 leading-tight mb-2 line-clamp-2 min-h-[38px] flex items-center justify-center">
-                              {producto.nombre}
-                            </h3>
                             
-                            <div className="w-full flex justify-between items-center mt-auto pt-2 border-t border-gray-50">
-                              <span className={`font-bold text-sm ${producto.disponible ? 'text-[#E95D34]' : 'text-gray-500'}`}>
-                                S/ {producto.precio.toFixed(2)}
-                              </span>
-                              <button 
-                                onClick={() => manejarClickAgregar(producto)}
-                                disabled={!producto.disponible}
-                                className={`w-7 h-7 rounded-full flex items-center justify-center shadow-md transition-colors ${producto.disponible ? 'bg-[#E95D34] text-white hover:bg-[#C8411B]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-                              >
-                                <MdAdd className="text-base" />
-                              </button>
+                            <div className="flex-1 flex flex-col justify-between py-1">
+                              <div>
+                                <h3 className="font-['Fredoka'] font-bold text-lg text-gray-800 leading-tight pr-12">{producto.nombre}</h3>
+                                <p className="text-gray-500 text-xs mt-1 line-clamp-2">{producto.descripcion}</p>
+                              </div>
+                              
+                              <div className="flex justify-between items-center mt-2">
+                                <span className={`font-bold text-lg ${producto.disponible ? 'text-[#E95D34]' : 'text-gray-500'}`}>
+                                  S/ {producto.precio.toFixed(2)}
+                                </span>
+                                
+                                <button 
+                                  onClick={() => manejarClickAgregar(producto)}
+                                  disabled={!producto.disponible}
+                                  className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors ${producto.disponible ? 'bg-[#E95D34] text-white hover:bg-[#C8411B]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                                >
+                                  <MdAdd className="text-lg" />
+                                </button>
+                              </div>
                             </div>
                           </article>
                         );
-                      }
-
-                      // --- TARJETA COMPLETA (Para el resto de la carta) ---
-                      return (
-                        <article key={producto.id} className={`bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-4 transition-transform active:scale-[0.99] relative overflow-hidden ${!producto.disponible ? 'opacity-70 grayscale' : ''}`}>
-                          {!producto.disponible && (
-                            <div className="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded z-10 shadow-sm uppercase tracking-wider">Agotado</div>
-                          )}
-                          <div className="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden relative bg-gray-100">
-                            <img alt={producto.nombre} className="w-full h-full object-cover" src={producto.imagen_url} />
-                            {producto.popular && producto.disponible && (
-                              <span className="absolute top-1 left-1 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-1.5 py-0.5 rounded-md">Popular</span>
-                            )}
-                          </div>
-                          
-                          <div className="flex-1 flex flex-col justify-between py-1">
-                            <div>
-                              <h3 className="font-['Fredoka'] font-bold text-lg text-gray-800 leading-tight pr-12">{producto.nombre}</h3>
-                              <p className="text-gray-500 text-xs mt-1 line-clamp-2">{producto.descripcion}</p>
-                            </div>
-                            
-                            <div className="flex justify-between items-center mt-2">
-                              <span className={`font-bold text-lg ${producto.disponible ? 'text-[#E95D34]' : 'text-gray-500'}`}>
-                                S/ {producto.precio.toFixed(2)}
-                              </span>
-                              
-                              <button 
-                                onClick={() => manejarClickAgregar(producto)}
-                                disabled={!producto.disponible}
-                                className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors ${producto.disponible ? 'bg-[#E95D34] text-white hover:bg-[#C8411B]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-                              >
-                                <MdAdd className="text-lg" />
-                              </button>
-                            </div>
-                          </div>
-                        </article>
-                      );
-                    })}
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </section>
           );
         })}
