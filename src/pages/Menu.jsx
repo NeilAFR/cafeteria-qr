@@ -99,7 +99,7 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
             <img alt={producto.nombre} className="w-full h-full object-cover" src={producto.imagen_url} />
           </div>
           <h3 className="font-['Fredoka'] font-bold text-[15px] text-gray-800 leading-tight mb-2 line-clamp-2 min-h-[20px] flex items-center justify-center">{producto.nombre}</h3>
-          <div className="w-full flex justify-between items-center mt-auto pt-2 border-t border-gray-50">
+          <div className="w-full flex justify-between items-center mt-auto pt-0 border-t border-gray-50">
             <span className={`font-bold text-sm ${producto.disponible ? 'text-[#E95D34]' : 'text-gray-500'}`}>S/ {producto.precio.toFixed(2)}</span>
             <button onClick={() => manejarClickAgregar(producto)} disabled={!producto.disponible} className={`w-7 h-7 rounded-full flex items-center justify-center shadow-md transition-colors ${producto.disponible ? 'bg-[#E95D34] text-white hover:bg-[#C8411B]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}><MdAdd className="text-base" /></button>
           </div>
