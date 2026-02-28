@@ -4,7 +4,7 @@ import { MdLocalCafe, MdLunchDining, MdCookie, MdLocalBar, MdIcecream, MdAdd, Md
 import ModalProducto from './ModalProductos';
 
 const iconosPorMacroCategoria = {
-  "Todos": <MdList className="text-xl" />, // Ícono exclusivo para el botón Todos
+  "Todos": <MdList className="text-xl" />,
   "Salados": <MdLunchDining className="text-lg" />,
   "Dulces": <MdCookie className="text-lg" />,
   "Bebidas calientes": <MdLocalCafe className="text-lg" />,
@@ -26,12 +26,18 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
     productos.some(p => p.macro_categoria === macro)
   );
 
-  // 1. EL NAVBAR AHORA INCLUYE "TODOS" POR DEFECTO AL INICIO
   const pestanasNavbar = ['Todos', ...macroCategoriasUnicas];
 
   const [categoriaActiva, setCategoriaActiva] = useState('Todos');
   const [subCategoriaActiva, setSubCategoriaActiva] = useState('Todos');
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+
+  // --- FIX DE SCROLL AL INICIAR EL MENÚ O CAMBIAR PESTAÑA ---
+  // Este useEffect se ejecuta cada vez que 'categoriaActiva' cambia
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, [categoriaActiva]);
+  // --------------------------------------------------------
 
   // --- LÓGICA DEL CARRUSEL ---
   const promociones = [
@@ -69,9 +75,9 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
 
   // --- FUNCIONES DE ACCIÓN ---
   const cambiarPestana = (pestana) => {
+    // Solo actualizamos el estado, el useEffect de arriba se encargará de subir el scroll
     setCategoriaActiva(pestana);
     setSubCategoriaActiva('Todos');
-    window.scrollTo({ top: 300, behavior: 'smooth' });
   };
 
   const manejarClickAgregar = (producto) => {
@@ -124,7 +130,6 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
     );
   };
 
-  // --- DETERMINAMOS QUÉ MACROS DIBUJAR ---
   const macrosAMostrar = categoriaActiva === 'Todos' ? macroCategoriasUnicas : [categoriaActiva];
 
   return (
@@ -161,7 +166,6 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
 
       <main className="px-5 py-6 space-y-6">
 
-        {/* CARRUSEL DE PROMOCIONES */}
         <div
           className="relative w-full h-40 rounded-2xl overflow-hidden shadow-lg group bg-gray-800 touch-pan-y"
           onTouchStart={manejarTouchStart}
@@ -185,16 +189,13 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
           </div>
         </div>
 
-        {/* RENDERIZADO UNIFICADO DE LA CARTA */}
         <div className="pt-2">
           {macrosAMostrar.map(macro => {
             const productosDeLaMacro = productos.filter(p => p.macro_categoria === macro);
             const subCatsDeLaMacro = [...new Set(productosDeLaMacro.map(p => p.categoria))];
 
-            // ¿Mostramos píldoras? Solo si estamos dentro de una macro específica y hay más de 1 categoría
             const mostrarPildoras = categoriaActiva !== 'Todos' && subCatsDeLaMacro.length > 1;
 
-            // Filtramos internamente si el usuario tocó una píldora
             const subCatsAMostrar = (categoriaActiva !== 'Todos' && subCategoriaActiva !== 'Todos')
               ? [subCategoriaActiva]
               : subCatsDeLaMacro;
@@ -202,7 +203,6 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
             return (
               <section key={macro} className={`${categoriaActiva === 'Todos' ? 'mb-10' : 'mb-4'}`}>
 
-                {/* Título de Macro Categoría */}
                 {categoriaActiva === 'Todos' ? (
                   <h2 className="font-['Fredoka'] text-3xl font-extrabold text-[#E95D34] mb-6 uppercase tracking-wider border-b-2 border-[#E95D34]/20 pb-2">
                     {macro}
@@ -213,7 +213,6 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
                   </h2>
                 )}
 
-                {/* Píldoras de subcategorías */}
                 {mostrarPildoras && (
                   <div className="flex overflow-x-auto space-x-2 pb-2 mb-6 -mx-5 px-5" style={{ scrollbarWidth: 'none' }}>
                     {["Todos", ...subCatsDeLaMacro].map(subCat => {
@@ -232,14 +231,12 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
                   </div>
                 )}
 
-                {/* Grillas de Productos */}
                 {subCatsAMostrar.map(subCat => {
                   const items = productosDeLaMacro.filter(p => p.categoria === subCat);
                   const esCompacta = ['Bebidas de Café', 'Bebidas de Café Frías', 'Cervezas', 'Jugos Clásicos'].includes(subCat);
 
                   return (
                     <div key={subCat} className="mb-8">
-                      {/* Ocultamos el sub-título solo si el usuario ya filtró con la píldora */}
                       {(subCatsAMostrar.length > 1 || categoriaActiva === 'Todos') && (
                         <h3 className="font-['Fredoka'] text-xl font-bold text-gray-800 mb-4 opacity-90">
                           {subCat}
