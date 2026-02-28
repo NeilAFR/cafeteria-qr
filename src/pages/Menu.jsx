@@ -98,7 +98,7 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
           <div className="w-24 h-24 mb-3 rounded-xl overflow-hidden relative bg-gray-100 shadow-sm">
             <img alt={producto.nombre} className="w-full h-full object-cover" src={producto.imagen_url} />
           </div>
-          <h3 className="font-['Fredoka'] font-bold text-[15px] text-gray-800 leading-tight mb-2 line-clamp-2 min-h-[38px] flex items-center justify-center">{producto.nombre}</h3>
+          <h3 className="font-['Fredoka'] font-bold text-[15px] text-gray-800 leading-tight mb-2 line-clamp-2 min-h-[20px] flex items-center justify-center">{producto.nombre}</h3>
           <div className="w-full flex justify-between items-center mt-auto pt-2 border-t border-gray-50">
             <span className={`font-bold text-sm ${producto.disponible ? 'text-[#E95D34]' : 'text-gray-500'}`}>S/ {producto.precio.toFixed(2)}</span>
             <button onClick={() => manejarClickAgregar(producto)} disabled={!producto.disponible} className={`w-7 h-7 rounded-full flex items-center justify-center shadow-md transition-colors ${producto.disponible ? 'bg-[#E95D34] text-white hover:bg-[#C8411B]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}><MdAdd className="text-base" /></button>
@@ -233,7 +233,7 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
 
                 {subCatsAMostrar.map(subCat => {
                   const items = productosDeLaMacro.filter(p => p.categoria === subCat);
-                  const esCompacta = ['Bebidas de Café', 'Bebidas de Café Frías', 'Cervezas', 'Jugos Clásicos'].includes(subCat);
+                  const esCompacta = ['Bebidas de Café', 'Bebidas de Café Frías', 'Cervezas', 'Jugos Clásicos', 'Teteras 1.8L', 'Macerados', 'Otras Bebidas', 'Postres'].includes(subCat);
 
                   return (
                     <div key={subCat} className="mb-8">
