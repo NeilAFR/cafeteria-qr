@@ -1,17 +1,21 @@
 import { FaArrowRight, FaFacebook, FaInstagram } from "react-icons/fa";
+import { useEffect } from 'react'; // <-- IMPORTAMOS useEffect
 
 // 1. CAMBIO CLAVE: Cambiamos el nombre a Bienvenida y recibimos { alHacerClic }
 function Bienvenida({ alHacerClic }) {
-  
-  const numeroMesa = 4;
+  useEffect(() => {
+    // Usamos 'auto' en lugar de 'smooth' para que el salto sea instantáneo
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
+  const numeroMesa = 12;
   return (
     <div className="min-h-screen bg-[#E85D36] flex flex-col items-center justify-between p-6 font-['Nunito'] text-[#FEF7E6] antialiased">
-      
+
       {/* --- SECCIÓN SUPERIOR: Logo y Título --- */}
       <div className="w-full flex flex-col items-center mt-10">
-        <img 
-          src="/Logo.jpg" 
-          alt="Logo Cafetería Cusco" 
+        <img
+          src="/Logo.jpg"
+          alt="Logo Cafetería Cusco"
           className="w-40 h-40 mb-6 rounded-3xl object-cover shadow-lg border-4 border-white/20"
         />
         <h1 className="font-['Fredoka'] text-5xl font-bold text-center leading-tight drop-shadow-md">
@@ -52,7 +56,7 @@ function Bienvenida({ alHacerClic }) {
         <p className="mb-4">Perú - Cusco</p>
         <div className="flex space-x-6 text-2xl">
           <a href="#" className="hover:text-white hover:-translate-y-1 transition-all"><FaFacebook /></a>
-          <a href="#" className="hover:text-white hover:-translate-y-1 transition-all"><FaInstagram /></a> 
+          <a href="#" className="hover:text-white hover:-translate-y-1 transition-all"><FaInstagram /></a>
         </div>
       </footer>
 
