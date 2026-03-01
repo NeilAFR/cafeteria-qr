@@ -10,25 +10,58 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
   // ======================================================================
   // 2. EL ALGORITMO DE RECOMENDACIONES (CROSS-SELLING)
   // ======================================================================
+
+  // A. Observación: Sacamos la lista de lo que ya compró
   const categoriasEnCarrito = [...new Set(carrito.map(item => item.macro_categoria))];
   const idsBaseEnCarrito = carrito.map(item => item.id);
 
-  const tieneBebida = categoriasEnCarrito.includes("Bebidas calientes") || categoriasEnCarrito.includes("Bebidas frías") || categoriasEnCarrito.includes("Bebidas con alcohol");
-  const tieneComida = categoriasEnCarrito.includes("Salados");
+  // B. Interruptores: ¿Qué tipo de cosas tiene?
+  const tieneBebidaCaliente = categoriasEnCarrito.includes("Bebidas calientes");
+  const tieneBebidaFria = categoriasEnCarrito.includes("Bebidas frías");
+  const tieneDulce = categoriasEnCarrito.includes("Dulces");
+  const tieneSalado = categoriasEnCarrito.includes("Salados");
 
-  let macroObjetivo = "Dulces";
+  // C. Metas por defecto
+  let macroObjetivo = "Dulces"; // Si no sabemos qué recomendar, ofrecemos un dulce
+  let categoriaObjetivo = null; // Opcional, por si queremos afinar a una sub-categoría exacta
 
-  if (tieneBebida && !tieneComida) {
+  // D. El Cerebro: Reglas de recomendación (De la más compleja a la más simple)
+
+  // Regla 1: Si tiene (Bebida Caliente o Fría) Y (Dulce) -> Recomendamos "Postres"
+  if ((tieneBebidaCaliente || tieneBebidaFria) && tieneDulce) {
+    macroObjetivo = "Dulces";
+    categoriaObjetivo = "Postres"; // Filtramos específicamente por la categoría "Postres"
+  }
+  // Regla 2: Si SOLO tiene Bebida Fría -> Recomendamos "Salados"
+  else if (tieneBebidaFria && !tieneSalado && !tieneDulce) {
     macroObjetivo = "Salados";
-  } else if (tieneComida && !tieneBebida) {
+  }
+  // Regla 3: Si SOLO tiene Bebida Caliente -> Recomendamos "Dulces"
+  else if (tieneBebidaCaliente && !tieneSalado && !tieneDulce) {
+    macroObjetivo = "Dulces";
+  }
+  // Regla Extra Lógica: Si SOLO tiene Comida Salada -> Recomendamos "Bebidas frías"
+  else if (tieneSalado && !tieneBebidaFria && !tieneBebidaCaliente && !tieneDulce) {
     macroObjetivo = "Bebidas frías";
   }
 
-  const recomendaciones = productosDB.filter(producto =>
-    producto.macro_categoria === macroObjetivo &&
-    producto.disponible === true &&
-    !idsBaseEnCarrito.includes(producto.id)
-  ).slice(0, 4);
+  // E. La Búsqueda: Filtramos la base de datos
+  const recomendaciones = productosDB.filter(producto => {
+    // 1. Que no esté en el carrito ya
+    if (idsBaseEnCarrito.includes(producto.id)) return false;
+
+    // 2. Que haya stock
+    if (producto.disponible !== true) return false;
+
+    // 3. Que sea de la macro_categoría que decidimos
+    if (producto.macro_categoria !== macroObjetivo) return false;
+
+    // 4. Si el cerebro decidió una sub-categoría exacta (ej. "Postres"), tiene que coincidir
+    if (categoriaObjetivo !== null && producto.categoria !== categoriaObjetivo) return false;
+
+    // Si pasa todas las pruebas, lo recomendamos
+    return true;
+  }).slice(0, 4); // Tomamos máximo 4
 
   // ======================================================================
   // --- FIX DE SCROLL DE PANTALLA ---
