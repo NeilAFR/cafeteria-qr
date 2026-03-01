@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+/* 1. ESTA LÍNEA HABILITA EL MODO OSCURO MANUAL POR CLASE EN LA V4 */
+@custom-variant dark (&:is(.dark *));
+
+/* 2. AQUÍ CARGAMOS TU MAQUETA */
+@theme {
+    /* Tus colores personalizados */
+    --color-primary: #E95D34;
+    --color-primary-dark: #C8411B;
+    --color-background-dark: #18181b;
+    --color-surface-dark: #27272a;
+    --color-text-cream: #EAE0D5;
+    --color-text-muted: #A1A1AA;
+
+    /* Tus fuentes */
+    --font-display: "Fredoka", sans-serif;
+    --font-body: "Nunito", sans-serif;
+
+    /* Tus sombras personalizadas */
+    --shadow-soft: 0 4px 20px -2px rgba(233, 93, 52, 0.15);
+    --shadow-dark-elevated: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* (Opcional) Si tenías tu animación slideUp, la dejas aquí abajo */
 @keyframes slideUp {
     from {
         transform: translateY(100%);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { IoMdSnow } from "react-icons/io";
-import { MdLocalCafe, MdLunchDining, MdCookie, MdLocalBar, MdIcecream, MdAdd, MdBrightnessMedium, MdRestaurantMenu, MdCheck, MdList } from "react-icons/md";
+import { MdLocalCafe, MdLunchDining, MdCookie, MdLocalBar, MdIcecream, MdAdd, MdBrightnessMedium, MdOutlineLightMode, MdRestaurantMenu, MdCheck, MdList } from "react-icons/md";
 import ModalProducto from './ModalProductos';
 
 const iconosPorMacroCategoria = {
@@ -20,7 +20,8 @@ const ordenMacroCategorias = [
   "Bebidas con alcohol"
 ];
 
-function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
+// RECIBIMOS modoOscuro y toggleModoOscuro COMO PROPS
+function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, modoOscuro, toggleModoOscuro }) {
 
   const macroCategoriasUnicas = ordenMacroCategorias.filter(macro =>
     productos.some(p => p.macro_categoria === macro)
@@ -32,12 +33,9 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
   const [subCategoriaActiva, setSubCategoriaActiva] = useState('Todos');
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
 
-  // --- FIX DE SCROLL AL INICIAR EL MENÚ O CAMBIAR PESTAÑA ---
-  // Este useEffect se ejecuta cada vez que 'categoriaActiva' cambia
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, [categoriaActiva]);
-  // --------------------------------------------------------
 
   // --- LÓGICA DEL CARRUSEL ---
   const promociones = [
@@ -73,9 +71,7 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
   const totalPrecio = carrito.reduce((suma, item) => suma + (item.precio * item.cantidad), 0);
 
-  // --- FUNCIONES DE ACCIÓN ---
   const cambiarPestana = (pestana) => {
-    // Solo actualizamos el estado, el useEffect de arriba se encargará de subir el scroll
     setCategoriaActiva(pestana);
     setSubCategoriaActiva('Todos');
   };
@@ -89,41 +85,52 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
     }
   };
 
-  // --- FUNCIÓN LIMPIADORA: DIBUJA LA TARJETA CORRECTA ---
+  // --- FUNCIÓN LIMPIADORA DE TARJETAS (CON CLASES DARK) ---
   const renderizarTarjeta = (producto, esCompacta) => {
     if (esCompacta) {
       return (
-        <article key={producto.id} className={`bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center transition-transform active:scale-[0.99] relative overflow-hidden ${!producto.disponible ? 'opacity-70 grayscale' : ''}`}>
+        <article key={producto.id} className={`bg-white dark:bg-surface-dark p-3 rounded-2xl shadow-sm dark:shadow-dark-elevated border border-gray-100 dark:border-white/5 flex flex-col items-center text-center transition-all active:scale-[0.99] relative overflow-hidden ${!producto.disponible ? 'opacity-70 grayscale' : ''}`}>
           {!producto.disponible && <div className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded z-10 shadow-sm uppercase tracking-wider">Agotado</div>}
-          <div className="w-24 h-24 mb-3 rounded-xl overflow-hidden relative bg-gray-100 shadow-sm">
-            <img alt={producto.nombre} className="w-full h-full object-cover" src={producto.imagen_url} />
+
+          <div className="w-24 h-24 mb-3 rounded-xl overflow-hidden relative bg-gray-100 dark:bg-black/20 shadow-sm">
+            <img alt={producto.nombre} className={`w-full h-full object-cover ${modoOscuro ? 'opacity-90' : ''}`} src={producto.imagen_url} />
           </div>
-          <h3 className="font-['Fredoka'] font-bold text-[15px] text-gray-800 leading-tight mb-2 line-clamp-2 min-h-[20px] flex items-center justify-center">{producto.nombre}</h3>
-          <div className="w-full flex justify-between items-center mt-auto pt-0 border-t border-gray-50">
-            <span className={`font-bold text-sm ${producto.disponible ? 'text-[#E95D34]' : 'text-gray-500'}`}>S/ {producto.precio.toFixed(2)}</span>
-            <button onClick={() => manejarClickAgregar(producto)} disabled={!producto.disponible} className={`w-7 h-7 rounded-full flex items-center justify-center shadow-md transition-colors ${producto.disponible ? 'bg-[#E95D34] text-white hover:bg-[#C8411B]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}><MdAdd className="text-base" /></button>
+
+          <h3 className="font-['Fredoka'] font-bold text-[15px] text-gray-800 dark:text-text-cream leading-tight mb-2 line-clamp-2 min-h-[38px] flex items-center justify-center">{producto.nombre}</h3>
+
+          <div className="w-full flex justify-between items-center mt-auto pt-2 border-t border-gray-50 dark:border-white/5">
+            <span className={`font-bold text-sm ${producto.disponible ? 'text-[#E95D34] dark:text-primary' : 'text-gray-500 dark:text-text-muted'}`}>S/ {producto.precio.toFixed(2)}</span>
+
+            <button onClick={() => manejarClickAgregar(producto)} disabled={!producto.disponible} className={`w-7 h-7 rounded-full flex items-center justify-center shadow-md transition-colors ${producto.disponible ? 'bg-white/10 text-[#E95D34] dark:text-primary hover:bg-[#E95D34] hover:text-white dark:hover:bg-primary dark:hover:text-white' : 'bg-gray-300 dark:bg-white/5 text-gray-500 dark:text-text-muted cursor-not-allowed'}`}>
+              <MdAdd className="text-base" />
+            </button>
           </div>
         </article>
       );
     }
 
     return (
-      <article key={producto.id} className={`bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-4 transition-transform active:scale-[0.99] relative overflow-hidden ${!producto.disponible ? 'opacity-70 grayscale' : ''}`}>
+      <article key={producto.id} className={`bg-white dark:bg-surface-dark p-3 rounded-2xl shadow-sm dark:shadow-dark-elevated border border-gray-100 dark:border-white/5 flex gap-4 transition-all active:scale-[0.99] relative overflow-hidden ${!producto.disponible ? 'opacity-70 grayscale' : ''}`}>
         {!producto.disponible && <div className="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded z-10 shadow-sm uppercase tracking-wider">Agotado</div>}
-        <div className="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden relative bg-gray-100">
-          <img alt={producto.nombre} className="w-full h-full object-cover" src={producto.imagen_url} />
-          {producto.popular && producto.disponible && <span className="absolute top-1 left-1 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-1.5 py-0.5 rounded-md">Popular</span>}
+
+        <div className="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden relative bg-gray-100 dark:bg-black/20">
+          <img alt={producto.nombre} className={`w-full h-full object-cover ${modoOscuro ? 'opacity-90' : ''}`} src={producto.imagen_url} />
+          {producto.popular && producto.disponible && <span className="absolute top-1 left-1 bg-yellow-400 dark:bg-yellow-500/90 text-yellow-900 dark:text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-sm">Popular</span>}
         </div>
+
         <div className="flex-1 flex flex-col justify-between py-1">
           <div>
             <div className="flex justify-between items-start">
-              <h3 className="font-['Fredoka'] font-bold text-lg text-gray-800 leading-tight pr-2">{producto.nombre}</h3>
+              <h3 className="font-['Fredoka'] font-bold text-lg text-gray-800 dark:text-text-cream leading-tight pr-2">{producto.nombre}</h3>
             </div>
-            <p className="text-gray-500 text-xs mt-1 line-clamp-2">{producto.descripcion}</p>
+            <p className="text-gray-500 dark:text-text-muted text-xs mt-1 line-clamp-2">{producto.descripcion}</p>
           </div>
           <div className="flex justify-between items-center mt-2">
-            <span className={`font-bold text-lg ${producto.disponible ? 'text-[#E95D34]' : 'text-gray-500'}`}>S/ {producto.precio.toFixed(2)}</span>
-            <button onClick={() => manejarClickAgregar(producto)} disabled={!producto.disponible} className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors ${producto.disponible ? 'bg-[#E95D34] text-white hover:bg-[#C8411B]' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}><MdAdd className="text-lg" /></button>
+            <span className={`font-bold text-lg ${producto.disponible ? 'text-[#E95D34] dark:text-primary' : 'text-gray-500 dark:text-text-muted'}`}>S/ {producto.precio.toFixed(2)}</span>
+
+            <button onClick={() => manejarClickAgregar(producto)} disabled={!producto.disponible} className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors ${producto.disponible ? 'bg-[#E95D34] dark:bg-primary text-white hover:bg-[#C8411B] dark:hover:bg-primary-dark' : 'bg-gray-300 dark:bg-white/5 text-gray-500 dark:text-text-muted cursor-not-allowed'}`}>
+              <MdAdd className="text-lg" />
+            </button>
           </div>
         </div>
       </article>
@@ -133,14 +140,24 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
   const macrosAMostrar = categoriaActiva === 'Todos' ? macroCategoriasUnicas : [categoriaActiva];
 
   return (
-    <div className="bg-[#FFFBF2] font-['Nunito'] text-[#4A3B32] min-h-screen pb-24 selection:bg-[#E95D34] selection:text-white">
+    // CONTENEDOR PRINCIPAL CON TRANSICIÓN DE COLOR
+    <div className="bg-[#FFFBF2] dark:bg-background-dark font-['Nunito'] text-[#4A3B32] dark:text-text-cream min-h-screen pb-24 selection:bg-[#E95D34] dark:selection:bg-primary selection:text-white transition-colors duration-300">
 
-      <header className="sticky top-0 z-40 bg-[#FFFBF2]/95 backdrop-blur-md border-b border-[#E95D34]/10 pb-2 shadow-sm">
+      {/* HEADER FIJO */}
+      <header className="sticky top-0 z-40 bg-[#FFFBF2]/95 dark:bg-background-dark/90 backdrop-blur-md border-b border-[#E95D34]/10 dark:border-white/5 pb-2 shadow-sm transition-colors duration-300">
         <div className="px-5 pt-6 pb-2 flex justify-between items-center">
           <div className="flex flex-col">
-            <h1 className="font-['Fredoka'] font-semibold text-2xl text-[#E95D34] tracking-wide">4 Gatos</h1>
-            <span className="text-xs uppercase tracking-widest font-bold opacity-70">Café Lúdico</span>
+            <h1 className="font-['Fredoka'] font-semibold text-2xl text-[#E95D34] dark:text-primary tracking-wide">4 Gatos</h1>
+            <span className="text-xs uppercase tracking-widest font-bold opacity-70 dark:text-text-muted">Café Lúdico</span>
           </div>
+
+          {/* EL BOTÓN DEL MODO OSCURO */}
+          <button
+            onClick={toggleModoOscuro}
+            className="p-2 rounded-full bg-white dark:bg-surface-dark shadow-sm dark:shadow-dark-elevated text-[#E95D34] dark:text-primary hover:bg-orange-50 dark:hover:bg-white/5 transition-colors"
+          >
+            {modoOscuro ? <MdOutlineLightMode className="text-xl" /> : <MdBrightnessMedium className="text-xl" />}
+          </button>
         </div>
 
         <nav className="mt-2 w-full overflow-x-auto pl-5 pr-2" style={{ scrollbarWidth: 'none' }}>
@@ -151,9 +168,9 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
                 <button
                   key={pestana}
                   onClick={() => cambiarPestana(pestana)}
-                  className={`flex items-center space-x-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all active:scale-95 ${estaActivo ? 'bg-[#E95D34] text-white shadow-[0_4px_15px_-3px_rgba(233,93,52,0.4)] font-bold' : 'bg-white border border-gray-200 text-gray-500 hover:bg-orange-50 font-medium'}`}
+                  className={`flex items-center space-x-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all active:scale-95 ${estaActivo ? 'bg-[#E95D34] dark:bg-primary text-white shadow-[0_4px_15px_-3px_rgba(233,93,52,0.4)] dark:shadow-soft font-bold' : 'bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/5 text-gray-500 dark:text-text-muted hover:bg-orange-50 dark:hover:text-text-cream font-medium'}`}
                 >
-                  <span className={estaActivo ? 'text-white' : 'text-gray-400'}>
+                  <span className={estaActivo ? 'text-white' : 'text-gray-400 dark:text-text-muted'}>
                     {iconosPorMacroCategoria[pestana] || <MdRestaurantMenu className="text-lg" />}
                   </span>
                   <span className="font-['Fredoka']">{pestana}</span>
@@ -166,19 +183,20 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
 
       <main className="px-5 py-6 space-y-6">
 
+        {/* CARRUSEL DE PROMOCIONES */}
         <div
-          className="relative w-full h-40 rounded-2xl overflow-hidden shadow-lg group bg-gray-800 touch-pan-y"
+          className="relative w-full h-40 rounded-2xl overflow-hidden shadow-lg dark:shadow-dark-elevated group bg-gray-800 dark:border dark:border-white/5 touch-pan-y"
           onTouchStart={manejarTouchStart}
           onTouchMove={manejarTouchMove}
           onTouchEnd={manejarTouchEnd}
         >
           {promociones.map((promo, index) => (
             <div key={index} className={`absolute inset-0 transition-opacity duration-700 ${index === promoActual ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-              <img src={promo.imagen} alt={`Promoción ${index + 1}`} className="absolute inset-0 w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent flex flex-col justify-center px-6">
-                <span className="text-white/90 text-xs font-bold uppercase tracking-wider mb-1">{promo.etiqueta}</span>
-                <h2 className="text-white font-['Fredoka'] text-2xl font-bold leading-tight whitespace-pre-line">{promo.titulo}</h2>
-                <button className="mt-3 bg-[#E95D34] text-white text-xs font-bold px-4 py-2 rounded-lg w-max shadow-md hover:bg-[#C8411B] transition-colors">{promo.textoBoton}</button>
+              <img src={promo.imagen} alt={`Promoción ${index + 1}`} className={`absolute inset-0 w-full h-full object-cover ${modoOscuro ? 'opacity-80' : ''}`} />
+              <div className={`absolute inset-0 bg-gradient-to-r ${modoOscuro ? 'from-background-dark via-background-dark/60' : 'from-black/70 via-black/40'} to-transparent flex flex-col justify-center px-6`}>
+                <span className={`text-xs font-bold uppercase tracking-wider mb-1 ${modoOscuro ? 'text-primary' : 'text-white/90'}`}>{promo.etiqueta}</span>
+                <h2 className="text-white font-['Fredoka'] text-2xl font-bold leading-tight whitespace-pre-line drop-shadow-md">{promo.titulo}</h2>
+                <button className={`mt-3 text-white text-xs font-bold px-4 py-2 rounded-lg w-max shadow-md transition-colors ${modoOscuro ? 'bg-primary hover:bg-primary-dark shadow-orange-900/20' : 'bg-[#E95D34] hover:bg-[#C8411B]'}`}>{promo.textoBoton}</button>
               </div>
             </div>
           ))}
@@ -204,15 +222,16 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
               <section key={macro} className={`${categoriaActiva === 'Todos' ? 'mb-10' : 'mb-4'}`}>
 
                 {categoriaActiva === 'Todos' ? (
-                  <h2 className="font-['Fredoka'] text-3xl font-extrabold text-[#E95D34] mb-6 uppercase tracking-wider border-b-2 border-[#E95D34]/20 pb-2">
+                  <h2 className="font-['Fredoka'] text-3xl font-extrabold text-[#E95D34] dark:text-primary mb-6 uppercase tracking-wider border-b-2 border-[#E95D34]/20 dark:border-white/5 pb-2">
                     {macro}
                   </h2>
                 ) : (
-                  <h2 className="font-['Fredoka'] text-2xl font-extrabold text-gray-800 tracking-tight mb-4">
+                  <h2 className="font-['Fredoka'] text-2xl font-extrabold text-gray-800 dark:text-text-cream tracking-tight mb-4">
                     {macro}
                   </h2>
                 )}
 
+                {/* SUB PÍLDORAS CON DARK MODE */}
                 {mostrarPildoras && (
                   <div className="flex overflow-x-auto space-x-2 pb-2 mb-6 -mx-5 px-5" style={{ scrollbarWidth: 'none' }}>
                     {["Todos", ...subCatsDeLaMacro].map(subCat => {
@@ -221,7 +240,7 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
                         <button
                           key={subCat}
                           onClick={() => setSubCategoriaActiva(subCat)}
-                          className={`flex items-center px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${esPildoraActiva ? 'bg-gray-800 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}
+                          className={`flex items-center px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${esPildoraActiva ? 'bg-gray-800 dark:bg-white/10 text-white shadow-md' : 'bg-white dark:bg-surface-dark text-gray-500 dark:text-text-muted border border-gray-200 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5 dark:hover:text-text-cream'}`}
                         >
                           {esPildoraActiva && <MdCheck className="mr-1 text-base" />}
                           {subCat}
@@ -238,7 +257,7 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
                   return (
                     <div key={subCat} className="mb-8">
                       {(subCatsAMostrar.length > 1 || categoriaActiva === 'Todos') && (
-                        <h3 className="font-['Fredoka'] text-xl font-bold text-gray-800 mb-4 opacity-90">
+                        <h3 className="font-['Fredoka'] text-xl font-bold text-gray-800 dark:text-text-cream mb-4 opacity-90">
                           {subCat}
                         </h3>
                       )}
@@ -255,10 +274,11 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings }) {
         </div>
       </main>
 
+      {/* BOTÓN DEL CARRITO */}
       <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-sm px-5 z-40">
-        <button onClick={irAlCarrito} className="w-full bg-[#1F1B1A] text-white p-4 rounded-xl shadow-2xl flex justify-between items-center hover:scale-[1.02] transition-transform duration-200">
+        <button onClick={irAlCarrito} className="w-full bg-[#1F1B1A] dark:bg-primary text-white p-4 rounded-xl shadow-2xl dark:shadow-orange-900/40 flex justify-between items-center hover:scale-[1.02] transition-transform duration-200 border border-transparent dark:border-white/10">
           <div className="flex items-center space-x-3">
-            <div className="bg-white/20 px-3 py-1 rounded-lg text-sm font-bold backdrop-blur-sm">{totalItems}</div>
+            <div className="bg-white/20 dark:bg-black/20 px-3 py-1 rounded-lg text-sm font-bold backdrop-blur-sm">{totalItems}</div>
             <span className="font-['Fredoka'] font-medium">Ver tu pedido</span>
           </div>
           <div className="font-bold text-lg">S/ {totalPrecio.toFixed(2)}</div>
