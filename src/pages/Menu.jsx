@@ -20,10 +20,8 @@ const ordenMacroCategorias = [
   "Bebidas con alcohol"
 ];
 
-// --- NUEVO: DICCIONARIO DE ORDEN PARA SUBCATEGORÍAS -
 const ordenSubCategorias = {
   "Salados": ["Smash Burgers", "Papas / Salchipapas", "Mini Waffles Salados"],
-
 };
 
 function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, modoOscuro, toggleModoOscuro }) {
@@ -38,15 +36,31 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
   const [subCategoriaActiva, setSubCategoriaActiva] = useState('Todos');
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
 
+  // --- NUEVO: ESTADOS PARA LA ANIMACIÓN Y AVISO ---
+  const [mensajeToast, setMensajeToast] = useState(null);
+  const [animarCarrito, setAnimarCarrito] = useState(false);
+
+  // Función maestra para mostrar el aviso
+  const mostrarAvisoAgregado = (nombreProducto) => {
+    setMensajeToast(`¡${nombreProducto} agregado!`);
+    setAnimarCarrito(true);
+
+    // A los 2.5 segundos, escondemos el aviso y quitamos la animación
+    setTimeout(() => {
+      setMensajeToast(null);
+      setAnimarCarrito(false);
+    }, 2500);
+  };
+  // ------------------------------------------------
+
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, [categoriaActiva]);
 
-  // --- LÓGICA DEL CARRUSEL ---
   const promociones = [
     { imagen: "/cheesecake_fresa.jpg", etiqueta: "Especial del día", titulo: "Cheesecake\nde Fresa", textoBoton: "Ver Promo" },
-    { imagen: "/escape_room4.jpg", etiqueta: "Diversión", titulo: "ESCAPE ROOM", textoBoton: "Reserva ya!" },
-    { imagen: "/waffles_banner.jpg", etiqueta: "Promo Miércoles", titulo: "3x2 en\nWaffles", textoBoton: "Disfrútalo!" }
+    { imagen: "/escape_room4.jpg", etiqueta: "Diversión", titulo: "ESCAPE ROOM", textoBoton: "¡Reserva ya!" },
+    { imagen: "/waffles_banner.jpg", etiqueta: "Promo Miércoles", titulo: "3x2 en\nWaffles", textoBoton: "¡Disfrútalo!" }
   ];
 
   const [promoActual, setPromoActual] = useState(0);
@@ -87,6 +101,8 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
       setProductoSeleccionado({ ...producto, extras_disponibles: categoriaConExtras.extras });
     } else {
       agregarAlCarrito({ ...producto, idCarrito: producto.id.toString(), cantidad: 1 });
+      // NUEVO: Mostramos el aviso si se agregó directo (sin abrir modal)
+      mostrarAvisoAgregado(producto.nombre);
     }
   };
 
@@ -145,6 +161,19 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
 
   return (
     <div className="bg-[#FFFBF2] dark:bg-background-dark font-['Nunito'] text-[#4A3B32] dark:text-text-cream min-h-screen pb-24 selection:bg-[#E95D34] dark:selection:bg-primary selection:text-white transition-colors duration-300">
+
+      {/* --- NUEVO: TOAST DE NOTIFICACIÓN FLOTANTE --- */}
+      <div className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-[60] pointer-events-none transition-all duration-300 ease-out ${mensajeToast ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'}`}>
+        <div className="bg-gray-900 dark:bg-surface-dark text-white border border-white/10 shadow-2xl px-6 py-3 rounded-full flex items-center gap-3">
+          <div className="bg-green-500/20 text-green-400 p-1 rounded-full">
+            <MdCheck className="text-lg" />
+          </div>
+          <span className="font-['Fredoka'] font-medium text-sm tracking-wide whitespace-nowrap">
+            {mensajeToast}
+          </span>
+        </div>
+      </div>
+      {/* ------------------------------------------- */}
 
       <header className="sticky top-0 z-40 bg-[#FFFBF2]/95 dark:bg-background-dark/90 backdrop-blur-md border-b border-[#E95D34]/10 dark:border-white/5 pb-2 shadow-sm transition-colors duration-300">
         <div className="px-5 pt-6 pb-2 flex justify-between items-center">
@@ -211,16 +240,13 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
           {macrosAMostrar.map(macro => {
             const productosDeLaMacro = productos.filter(p => p.macro_categoria === macro);
 
-            // 1. OBTENEMOS LAS SUBCATEGORÍAS ÚNICAS
             let subCatsDeLaMacro = [...new Set(productosDeLaMacro.map(p => p.categoria))];
 
-            // 2. APLICAMOS EL ORDENAMIENTO ESTRICTO SI EXISTE
             if (ordenSubCategorias[macro]) {
               subCatsDeLaMacro.sort((a, b) => {
                 let posA = ordenSubCategorias[macro].indexOf(a);
                 let posB = ordenSubCategorias[macro].indexOf(b);
 
-                // Si encontramos un producto que no está en la lista de orden, lo mandamos al final (99)
                 if (posA === -1) posA = 99;
                 if (posB === -1) posB = 99;
 
@@ -289,10 +315,18 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
         </div>
       </main>
 
+      {/* --- NUEVO: ANIMACIÓN ESCALA/COLOR EN EL BOTÓN DEL CARRITO --- */}
       <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-sm px-5 z-40">
-        <button onClick={irAlCarrito} className="w-full bg-[#1F1B1A] dark:bg-primary text-white p-4 rounded-xl shadow-2xl dark:shadow-orange-900/40 flex justify-between items-center hover:scale-[1.02] transition-transform duration-200 border border-transparent dark:border-white/10">
+        <button
+          onClick={irAlCarrito}
+          className={`w-full bg-[#1F1B1A] dark:bg-primary text-white p-4 rounded-xl shadow-2xl flex justify-between items-center transition-all duration-300 border border-transparent dark:border-white/10
+            ${animarCarrito ? 'scale-105 shadow-[0_0_20px_rgba(233,93,52,0.6)] ring-2 ring-offset-2 ring-[#E95D34]' : 'hover:scale-[1.02]'}
+          `}
+        >
           <div className="flex items-center space-x-3">
-            <div className="bg-white/20 dark:bg-black/20 px-3 py-1 rounded-lg text-sm font-bold backdrop-blur-sm">{totalItems}</div>
+            <div className={`px-3 py-1 rounded-lg text-sm font-bold backdrop-blur-sm transition-colors duration-300 ${animarCarrito ? 'bg-[#E95D34] text-white' : 'bg-white/20 dark:bg-black/20'}`}>
+              {totalItems}
+            </div>
             <span className="font-['Fredoka'] font-medium">Ver tu pedido</span>
           </div>
           <div className="font-bold text-lg">S/ {totalPrecio.toFixed(2)}</div>
@@ -300,7 +334,16 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
       </div>
 
       {productoSeleccionado && (
-        <ModalProducto producto={productoSeleccionado} cerrarModal={() => setProductoSeleccionado(null)} confirmarAgregado={(prod) => { agregarAlCarrito(prod); setProductoSeleccionado(null); }} />
+        <ModalProducto
+          producto={productoSeleccionado}
+          cerrarModal={() => setProductoSeleccionado(null)}
+          confirmarAgregado={(prod) => {
+            agregarAlCarrito(prod);
+            setProductoSeleccionado(null);
+            // NUEVO: Mostramos el aviso si se agregó desde el modal
+            mostrarAvisoAgregado(prod.nombre);
+          }}
+        />
       )}
     </div>
   );
