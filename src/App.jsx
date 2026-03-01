@@ -12,13 +12,23 @@ function App() {
   const [dbProductos, setDbProductos] = useState([]);
   const [dbToppings, setDbToppings] = useState([]);
   const [cargando, setCargando] = useState(true);
-
-  // --- 1. ESTADO GLOBAL DEL MODO OSCURO ---
-  // Iniciamos en falso (Modo Claro por defecto)
   const [modoOscuro, setModoOscuro] = useState(false);
 
-  // --- 2. INYECTAR LA CLASE AL HTML ---
-  // Este useEffect vigila el botón. Si es true, pone 'dark' en todo tu proyecto.
+  // --- NUEVO: ESTADO GLOBAL DE LA MESA ---
+  const [numeroMesa, setNumeroMesa] = useState('Barra'); // "Barra" por defecto si entran sin QR
+
+  // --- NUEVO: LEER LA URL ---
+  useEffect(() => {
+    // Esto busca parámetros como "?mesa=5" en el link
+    const parametrosURL = new URLSearchParams(window.location.search);
+    const mesaDesdeLink = parametrosURL.get('mesa');
+
+    if (mesaDesdeLink) {
+      setNumeroMesa(mesaDesdeLink);
+    }
+  }, []);
+  // --------------------------
+
   useEffect(() => {
     if (modoOscuro) {
       document.documentElement.classList.add('dark');
@@ -28,7 +38,6 @@ function App() {
   }, [modoOscuro]);
 
   const toggleModoOscuro = () => setModoOscuro(!modoOscuro);
-  // ----------------------------------------
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -115,6 +124,7 @@ function App() {
           alHacerClic={irAlMenu}
           modoOscuro={modoOscuro}
           toggleModoOscuro={toggleModoOscuro}
+          numeroMesa={numeroMesa} /* <-- PASAMOS LA MESA */
         />
       )}
 
@@ -125,7 +135,6 @@ function App() {
           agregarAlCarrito={agregarAlCarrito}
           productos={dbProductos}
           toppings={dbToppings}
-          // --- 3. PASAMOS LAS PROPS AL MENÚ ---
           modoOscuro={modoOscuro}
           toggleModoOscuro={toggleModoOscuro}
         />
@@ -141,11 +150,15 @@ function App() {
           aumentarCantidad={aumentarCantidad}
           eliminarDelCarrito={eliminarDelCarrito}
           irAConfirmacion={irAConfirmacion}
+          numeroMesa={numeroMesa} /* <-- PASAMOS LA MESA */
         />
       )}
 
       {pantallaActual === 'confirmacion' && (
-        <Confirmacion volverAlMenu={finalizarPedidoYVolver} />
+        <Confirmacion
+          volverAlMenu={finalizarPedidoYVolver}
+          numeroMesa={numeroMesa} /* <-- PASAMOS LA MESA */
+        />
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { MdArrowBackIosNew, MdInfo, MdRestaurantMenu, MdDeleteOutline, MdEditNote, MdCheckCircle } from "react-icons/md";
 
-function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCantidad, aumentarCantidad, eliminarDelCarrito, irAConfirmacion }) {
+function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCantidad, aumentarCantidad, eliminarDelCarrito, irAConfirmacion, numeroMesa }) {
 
   const subtotal = carrito.reduce((suma, item) => suma + (item.precio * item.cantidad), 0);
   const total = subtotal;
@@ -51,7 +51,7 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
           </button>
           <div className="flex flex-col items-center">
             <h1 className="font-['Fredoka'] text-xl font-bold text-gray-800 dark:text-text-cream tracking-wide">Mi Pedido</h1>
-            <span className="text-xs font-bold text-[#E65E3A] dark:text-primary bg-[#E65E3A]/10 dark:bg-primary/10 px-3 py-1 rounded-full mt-1">Mesa 12</span>
+            <span className="text-xs font-bold text-[#E65E3A] dark:text-primary bg-[#E65E3A]/10 dark:bg-primary/10 px-3 py-1 rounded-full mt-1">Mesa {numeroMesa}</span>
           </div>
           <div className="w-10"></div>
         </div>

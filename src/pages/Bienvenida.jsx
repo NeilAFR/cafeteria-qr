@@ -2,13 +2,11 @@ import { FaArrowRight, FaFacebook, FaInstagram } from "react-icons/fa";
 import { MdOutlineLightMode, MdBrightnessMedium, MdRestaurantMenu } from "react-icons/md"; // Importamos los íconos del sol/luna
 import { useEffect } from 'react';
 
-function Bienvenida({ alHacerClic, modoOscuro, toggleModoOscuro }) { // Recibimos las props del modo oscuro
+function Bienvenida({ alHacerClic, modoOscuro, toggleModoOscuro, numeroMesa }) { // Recibimos las props del modo oscuro
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, []);
-
-  const numeroMesa = 12;
 
   return (
     // Agregamos la transición de color y el fondo oscuro

@@ -20,7 +20,12 @@ const ordenMacroCategorias = [
   "Bebidas con alcohol"
 ];
 
-// RECIBIMOS modoOscuro y toggleModoOscuro COMO PROPS
+// --- NUEVO: DICCIONARIO DE ORDEN PARA SUBCATEGORÍAS -
+const ordenSubCategorias = {
+  "Salados": ["Smash Burgers", "Papas / Salchipapas", "Mini Waffles Salados"],
+
+};
+
 function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, modoOscuro, toggleModoOscuro }) {
 
   const macroCategoriasUnicas = ordenMacroCategorias.filter(macro =>
@@ -85,7 +90,6 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
     }
   };
 
-  // --- FUNCIÓN LIMPIADORA DE TARJETAS (CON CLASES DARK) ---
   const renderizarTarjeta = (producto, esCompacta) => {
     if (esCompacta) {
       return (
@@ -140,10 +144,8 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
   const macrosAMostrar = categoriaActiva === 'Todos' ? macroCategoriasUnicas : [categoriaActiva];
 
   return (
-    // CONTENEDOR PRINCIPAL CON TRANSICIÓN DE COLOR
     <div className="bg-[#FFFBF2] dark:bg-background-dark font-['Nunito'] text-[#4A3B32] dark:text-text-cream min-h-screen pb-24 selection:bg-[#E95D34] dark:selection:bg-primary selection:text-white transition-colors duration-300">
 
-      {/* HEADER FIJO */}
       <header className="sticky top-0 z-40 bg-[#FFFBF2]/95 dark:bg-background-dark/90 backdrop-blur-md border-b border-[#E95D34]/10 dark:border-white/5 pb-2 shadow-sm transition-colors duration-300">
         <div className="px-5 pt-6 pb-2 flex justify-between items-center">
           <div className="flex flex-col">
@@ -151,7 +153,6 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
             <span className="text-xs uppercase tracking-widest font-bold opacity-70 dark:text-text-muted">Café Lúdico</span>
           </div>
 
-          {/* EL BOTÓN DEL MODO OSCURO */}
           <button
             onClick={toggleModoOscuro}
             className="p-2 rounded-full bg-white dark:bg-surface-dark shadow-sm dark:shadow-dark-elevated text-[#E95D34] dark:text-primary hover:bg-orange-50 dark:hover:bg-white/5 transition-colors"
@@ -183,7 +184,6 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
 
       <main className="px-5 py-6 space-y-6">
 
-        {/* CARRUSEL DE PROMOCIONES */}
         <div
           className="relative w-full h-40 rounded-2xl overflow-hidden shadow-lg dark:shadow-dark-elevated group bg-gray-800 dark:border dark:border-white/5 touch-pan-y"
           onTouchStart={manejarTouchStart}
@@ -210,7 +210,23 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
         <div className="pt-2">
           {macrosAMostrar.map(macro => {
             const productosDeLaMacro = productos.filter(p => p.macro_categoria === macro);
-            const subCatsDeLaMacro = [...new Set(productosDeLaMacro.map(p => p.categoria))];
+
+            // 1. OBTENEMOS LAS SUBCATEGORÍAS ÚNICAS
+            let subCatsDeLaMacro = [...new Set(productosDeLaMacro.map(p => p.categoria))];
+
+            // 2. APLICAMOS EL ORDENAMIENTO ESTRICTO SI EXISTE
+            if (ordenSubCategorias[macro]) {
+              subCatsDeLaMacro.sort((a, b) => {
+                let posA = ordenSubCategorias[macro].indexOf(a);
+                let posB = ordenSubCategorias[macro].indexOf(b);
+
+                // Si encontramos un producto que no está en la lista de orden, lo mandamos al final (99)
+                if (posA === -1) posA = 99;
+                if (posB === -1) posB = 99;
+
+                return posA - posB;
+              });
+            }
 
             const mostrarPildoras = categoriaActiva !== 'Todos' && subCatsDeLaMacro.length > 1;
 
@@ -231,7 +247,6 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
                   </h2>
                 )}
 
-                {/* SUB PÍLDORAS CON DARK MODE */}
                 {mostrarPildoras && (
                   <div className="flex overflow-x-auto space-x-2 pb-2 mb-6 -mx-5 px-5" style={{ scrollbarWidth: 'none' }}>
                     {["Todos", ...subCatsDeLaMacro].map(subCat => {
@@ -274,7 +289,6 @@ function Menu({ irAlCarrito, carrito, agregarAlCarrito, productos, toppings, mod
         </div>
       </main>
 
-      {/* BOTÓN DEL CARRITO */}
       <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-sm px-5 z-40">
         <button onClick={irAlCarrito} className="w-full bg-[#1F1B1A] dark:bg-primary text-white p-4 rounded-xl shadow-2xl dark:shadow-orange-900/40 flex justify-between items-center hover:scale-[1.02] transition-transform duration-200 border border-transparent dark:border-white/10">
           <div className="flex items-center space-x-3">

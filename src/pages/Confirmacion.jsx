@@ -1,6 +1,6 @@
 import { MdClose, MdRestaurant, MdVideogameAsset } from "react-icons/md";
 
-function Confirmacion({ volverAlMenu }) {
+function Confirmacion({ volverAlMenu, numeroMesa }) {
   return (
     // Agregamos dark:bg-background-dark y transición
     <div className="bg-[#FFF8F0] dark:bg-background-dark font-['Nunito'] antialiased text-gray-900 dark:text-text-cream min-h-screen flex flex-col items-center justify-center sm:py-8 transition-colors duration-300">
@@ -32,7 +32,7 @@ function Confirmacion({ volverAlMenu }) {
             <div className="flex flex-col items-center text-center gap-2">
               <h2 className="text-3xl font-['Fredoka'] font-extrabold text-[#E65E3A] dark:text-primary tracking-tight">¡Pedido Recibido!</h2>
               <p className="text-gray-600 dark:text-text-muted text-base max-w-[280px]">
-                Tu pedido para la <span className="font-bold text-gray-900 dark:text-text-cream">Mesa 12</span> ha sido enviado a la cocina.
+                Tu pedido para la <span className="font-bold text-gray-900 dark:text-text-cream">Mesa {numeroMesa}</span> ha sido enviado a la cocina.
               </p>
             </div>
           </div>
