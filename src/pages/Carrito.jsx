@@ -40,7 +40,7 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
 
 
   return (
-    <div className="bg-[#FFF8F0] text-[#4A403A] font-['Nunito'] antialiased min-h-screen flex flex-col animate-[slideUp_0.4s_ease-out]">
+    <div className="bg-[#FFF8F0] text-[#4A403A] font-['Nunito'] antialiased min-h-screen flex flex-col animate-[slideUp_0.3s_ease-out]">
 
       {/* HEADER */}
       <header className="sticky top-0 z-40 bg-[#FFF8F0]/90 backdrop-blur-md border-b border-[#E65E3A]/10 px-4 pt-8 pb-4 shadow-sm">
