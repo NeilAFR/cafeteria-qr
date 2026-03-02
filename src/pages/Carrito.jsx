@@ -1,7 +1,10 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { MdArrowBackIosNew, MdInfo, MdRestaurantMenu, MdDeleteOutline, MdEditNote, MdCheckCircle } from "react-icons/md";
 
 function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCantidad, aumentarCantidad, eliminarDelCarrito, irAConfirmacion, numeroMesa }) {
+
+  // NUEVO: Estado para capturar lo que el cliente escriba
+  const [observacionesGenerales, setObservacionesGenerales] = useState("");
 
   const subtotal = carrito.reduce((suma, item) => suma + (item.precio * item.cantidad), 0);
   const total = subtotal;
@@ -57,7 +60,8 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
         </div>
       </header>
 
-      <main className="flex-1 px-4 py-6 space-y-6 overflow-y-auto pb-48">
+      {/* CAMBIO CLAVE: Cambié pb-48 por pb-[280px] para asegurar espacio para el teclado y footer */}
+      <main className="flex-1 px-4 py-6 space-y-6 overflow-y-auto pb-[280px]">
 
         {/* MENSAJE INFORMATIVO */}
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded-xl p-4 flex items-start gap-3 transition-colors duration-300">
@@ -92,18 +96,13 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
 
                   <p className="text-xs text-gray-500 dark:text-text-muted mb-2 truncate">{item.descripcion}</p>
 
-                  {(item.extras?.length > 0 || item.notas) && (
+                  {(item.extras?.length > 0) && (
                     <div className="mb-3 space-y-1">
                       {item.extras?.map((extra, i) => (
                         <div key={i} className="text-[10px] inline-block bg-orange-50 dark:bg-primary/10 text-[#E65E3A] dark:text-primary border border-orange-100 dark:border-primary/20 px-2 py-0.5 rounded-md font-semibold mr-1 mb-1">
                           + {extra.nombre} (S/ {extra.precio.toFixed(2)})
                         </div>
                       ))}
-                      {item.notas && (
-                        <div className="text-[10px] text-gray-500 dark:text-text-muted italic bg-gray-50 dark:bg-white/5 px-2 py-1 rounded-md border border-gray-100 dark:border-white/10 mt-1">
-                          <span className="font-semibold not-italic">Nota:</span> {item.notas}
-                        </div>
-                      )}
                     </div>
                   )}
 
@@ -182,6 +181,8 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
           </h3>
           <p className="text-xs text-gray-500 dark:text-text-muted mb-2">¿Necesitas vasos extra, cubiertos o tienes alguna indicación general para los meseros?</p>
           <textarea
+            value={observacionesGenerales}
+            onChange={(e) => setObservacionesGenerales(e.target.value)}
             className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg p-3 text-sm text-gray-700 dark:text-text-cream dark:placeholder-gray-600 focus:outline-none focus:border-[#E65E3A] dark:focus:border-primary transition-colors"
             placeholder="Escribe tus indicaciones generales aquí..."
             rows="3"
@@ -204,7 +205,7 @@ function Carrito({ irAlMenu, carrito, productosDB, agregarAlCarrito, disminuirCa
           </div>
 
           <button
-            onClick={irAConfirmacion}
+            onClick={() => irAConfirmacion(observacionesGenerales)} // <-- Pasamos las notas al padre (App.jsx)
             disabled={carrito.length === 0}
             className={`w-full font-bold text-lg py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all ${carrito.length === 0 ? 'bg-gray-300 dark:bg-white/5 text-gray-500 dark:text-text-muted' : 'bg-[#E65E3A] dark:bg-primary hover:bg-orange-600 dark:hover:bg-primary-dark text-white shadow-orange-500/30 dark:shadow-orange-900/30 active:scale-[0.98]'}`}
           >

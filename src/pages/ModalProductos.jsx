@@ -6,7 +6,6 @@ function ModalProducto({ producto, cerrarModal, confirmarAgregado }) {
 
   const [cantidad, setCantidad] = useState(1);
   const [extrasSeleccionados, setExtrasSeleccionados] = useState([]);
-  const [notas, setNotas] = useState("");
 
   const [bebidaCombo, setBebidaCombo] = useState("Naranja Sunrise");
   const opcionesBebidaCombo = ["Naranja Sunrise", "Red Berry Fizz", "Maracuyá Spark", "Coca Orange"];
@@ -35,7 +34,8 @@ function ModalProducto({ producto, cerrarModal, confirmarAgregado }) {
     });
 
     const idsExtras = extrasProcesados.map(e => e.id_extra).sort().join('-');
-    const idCarritoUnico = `${producto.id}-${idsExtras}-${bebidaCombo}-${notas}`;
+    // ID limpio sin notas
+    const idCarritoUnico = `${producto.id}-${idsExtras}-${bebidaCombo}`;
 
     const productoPersonalizado = {
       ...producto,
@@ -43,7 +43,6 @@ function ModalProducto({ producto, cerrarModal, confirmarAgregado }) {
       precioOriginal: producto.precio,
       precio: precioUnitario,
       extras: extrasProcesados,
-      notas: notas,
       cantidad: cantidad
     };
 
@@ -55,7 +54,6 @@ function ModalProducto({ producto, cerrarModal, confirmarAgregado }) {
 
       <div className="relative flex w-full max-w-md flex-col bg-[#FFFBF2] dark:bg-background-dark rounded-t-3xl sm:rounded-3xl h-[85vh] overflow-hidden shadow-2xl animate-[slideUp_0.3s_ease-out] transition-colors duration-300">
 
-        {/* HEADER MODAL */}
         <div className="flex items-center bg-[#FFFBF2] dark:bg-background-dark p-4 pb-2 justify-between z-10 shadow-sm border-b border-[#E95D34]/10 dark:border-white/5 transition-colors">
           <button onClick={cerrarModal} className="text-gray-800 dark:text-text-cream flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
             <MdClose className="text-2xl" />
@@ -67,7 +65,6 @@ function ModalProducto({ producto, cerrarModal, confirmarAgregado }) {
 
         <div className="flex-1 overflow-y-auto pb-32">
 
-          {/* IMAGEN */}
           <div className="p-4">
             <div
               className="w-full bg-gray-200 dark:bg-black/20 bg-center bg-no-repeat bg-cover aspect-video rounded-xl shadow-sm dark:shadow-dark-elevated"
@@ -144,19 +141,8 @@ function ModalProducto({ producto, cerrarModal, confirmarAgregado }) {
               })}
             </div>
 
-            <div className="border-t border-gray-200 dark:border-white/10 my-6"></div>
-
-            <h3 className="text-gray-900 dark:text-text-cream text-lg font-['Fredoka'] font-bold leading-tight mb-3">
-              Notas especiales
-            </h3>
-            <textarea
-              value={notas}
-              onChange={(e) => setNotas(e.target.value)}
-              className="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-surface-dark text-gray-900 dark:text-text-cream dark:placeholder-gray-500 p-4 text-sm focus:border-[#E95D34] dark:focus:border-primary focus:ring-1 focus:ring-[#E95D34] dark:focus:ring-primary focus:outline-none resize-none transition-colors"
-              placeholder="¿Algo que debamos saber? Ej. Sin cebolla..."
-              rows="3"
-            ></textarea>
-            <div className="h-6"></div>
+            {/* Espaciador extra para asegurar que el scroll llegue al final */}
+            <div className="h-10"></div>
           </div>
         </div>
 

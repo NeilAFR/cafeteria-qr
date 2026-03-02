@@ -1,9 +1,17 @@
+import { useEffect } from 'react'; // <-- IMPORTAMOS useEffect
 import { MdClose, MdRestaurant, MdVideogameAsset } from "react-icons/md";
 
 function Confirmacion({ volverAlMenu, numeroMesa }) {
+
+  // --- FIX DE SCROLL: Forzamos la vista hacia arriba al instante ---
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
+  // -----------------------------------------------------------------
+
   return (
-    // Agregamos dark:bg-background-dark y transición
-    <div className="bg-[#FFF8F0] dark:bg-background-dark font-['Nunito'] antialiased text-gray-900 dark:text-text-cream min-h-screen flex flex-col items-center justify-center sm:py-8 transition-colors duration-300">
+    // Agregamos la animación: animate-[slideInRight_0.4s_ease-out]
+    <div className="bg-[#FFF8F0] dark:bg-background-dark font-['Nunito'] antialiased text-gray-900 dark:text-text-cream min-h-screen flex flex-col items-center justify-center sm:py-8 transition-colors duration-300 animate-[slideInRight_0.4s_ease-out]">
 
       {/* Contenedor principal estilo móvil */}
       <div className="relative flex h-full min-h-screen w-full max-w-md flex-col overflow-hidden bg-[#FFF8F0] dark:bg-background-dark shadow-2xl sm:h-[844px] sm:min-h-0 sm:rounded-[2.5rem] sm:border-[8px] sm:border-gray-900 dark:sm:border-surface-dark transition-colors duration-300">
@@ -25,7 +33,7 @@ function Confirmacion({ volverAlMenu, numeroMesa }) {
             <div className="relative flex items-center justify-center w-full max-w-[240px] aspect-square">
               <div className="absolute inset-0 rounded-full bg-[#E65E3A]/10 dark:bg-primary/20 scale-90 animate-pulse"></div>
               <div className="absolute inset-0 rounded-full bg-[#E65E3A]/5 dark:bg-primary/10 scale-110"></div>
-              {/* Recuerda guardar una foto llamada gato_confirmacion.jpg en tu carpeta public/ */}
+              {/* Recuerda guardar una foto llamada confirmacion.jpg en tu carpeta public/ */}
               <img src="/confirmacion.jpg" alt="Gato confirmación" className="w-full h-full object-cover rounded-full z-10 shadow-md dark:opacity-90" />
             </div>
 
